@@ -1,0 +1,55 @@
+:root {
+  font-family: 'Roboto', sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+/* Header */
+
+header {
+  background-color: rgb(181, 1, 1);
+  color: rgb(234, 233, 233);
+  padding: 10px 40px;
+  display: grid;
+  grid-template-columns: 10fr 1fr 1fr 1fr;
+  gap: 24px;
+  align-items: center;
+  justify-items: center;
+}
+
+header #logo {
+  justify-self: left;
+  width: 60px;
+  filter: invert(0.1);  /* soften the white */
+}
+
+header #next-due {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+header #next-due #clock {
+  width: 60px;
+  filter: invert(0.9); /* soften the white */
+  flex: none;
+}
+
+header #next-due span {
+  font-size: 24px;
+  text-wrap: nowrap;
+}
+
+header #profile {
+  width: 60px;
+  border-radius: 50%;
+}
+
+header #add-btn {
+  font-size: 60px;
+  display: grid;
+  place-items: center;
+  padding-bottom: 10px;
+}
