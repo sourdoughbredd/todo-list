@@ -61,7 +61,7 @@ header #next-due span {
   user-select: none;
 }
 
-header #add-btn {
+header .add-btn {
   font-size: 60px;
   display: grid;
   place-items: center;
