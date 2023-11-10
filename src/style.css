@@ -1,5 +1,7 @@
 :root {
   font-family: 'Roboto', sans-serif;
+  --white-color: rgb(224, 224, 224);
+  --red-color: rgb(181, 1, 1);
 }
 
 body {
@@ -9,30 +11,43 @@ body {
 /* Header */
 
 header {
-  background-color: rgb(181, 1, 1);
-  color: rgb(234, 233, 233);
+  background-color:var(--red-color);
+  color: var(--white-color);
   padding: 10px 40px;
-  display: grid;
-  grid-template-columns: 10fr 1fr 1fr 1fr;
-  gap: 24px;
+  display: flex;
+  /* display: grid;
+  grid-template-columns: 10fr 1fr 1fr 1fr; */
+  gap: 48px;
   align-items: center;
-  justify-items: center;
+  /* justify-items: center; */
 }
 
 header #logo {
-  justify-self: left;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+}
+
+header #logo img {
   width: 60px;
+  height: 60px;
   filter: invert(0.1);  /* soften the white */
+  margin-right: 24px;
 }
 
 header #next-due {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 4px;
+  cursor: pointer;
+  border: 3px solid var(--white-color);
+  border-radius: 30px;
+  padding: 2px 8px 2px 6px;
 }
 
 header #next-due #clock {
-  width: 60px;
+  width: 50px;
+  height: 50px;
   filter: invert(0.9); /* soften the white */
   flex: none;
 }
@@ -40,11 +55,7 @@ header #next-due #clock {
 header #next-due span {
   font-size: 24px;
   text-wrap: nowrap;
-}
-
-header #profile {
-  width: 60px;
-  border-radius: 50%;
+  user-select: none;
 }
 
 header #add-btn {
@@ -52,4 +63,12 @@ header #add-btn {
   display: grid;
   place-items: center;
   padding-bottom: 10px;
+  user-select: none;
+  cursor: pointer;
+}
+
+header #profile {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
 }
