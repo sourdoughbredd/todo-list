@@ -6,6 +6,9 @@
 
 body {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* Header */
@@ -72,3 +75,38 @@ header #profile {
   height: 60px;
   border-radius: 50%;
 }
+
+/* Content */
+
+#content {
+  flex-grow: 1;
+}
+
+/* Footer */
+
+footer {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  background-color: inherit;
+  height: 40px;
+}
+
+/* Copyright with github */
+footer div {
+  display: flex;
+  align-items: center;
+}
+
+#github-logo {
+  height: auto;
+  width: 20px;
+  margin-left: 6px;
+}
+
+#github-logo:hover {
+  transform: scale(1.1);
+}
+
