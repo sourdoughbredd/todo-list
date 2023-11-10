@@ -1,4 +1,4 @@
-import githubLogo from "./github-mark.png";
+import githubLogo from "./assets/github-mark.png";
 export { loadFooter };
 
 function loadFooter() {

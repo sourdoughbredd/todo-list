@@ -1,6 +1,6 @@
-import logo from './todo-logo.png';
-import profilePic from './headshot.png';
-import clock from './clock.svg';
+import logo from './assets/todo-logo.png';
+import profilePic from './assets/headshot.png';
+import clock from './assets/clock.svg';
 
 export { loadHeader }
 
