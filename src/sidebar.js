@@ -13,7 +13,7 @@ function loadSidebar() {
         <div class="project-explorer">
             <div class="title">
                 <h3>Projects</h3>
-                <div class="add-btn" tabindex="0">+</div>
+                <div class="add-project-btn" tabindex="0">+</div>
             </div>
             <ul class="projects"></ul>
         </div>
