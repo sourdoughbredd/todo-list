@@ -1,3 +1,4 @@
+import { isDate } from 'date-fns';
 export { Task };
 
 const Task = (function() {
@@ -8,6 +9,15 @@ const Task = (function() {
     
     // Task object factory function
     function createTask(id, description, importance, dueDate, projects, notes, completed) {
+
+        function isEditableTaskProperty(property) {
+            return property === "description"
+                || property === "importance"
+                || property === "dueDate"
+                || property === "notes"
+                || property === "completed";
+        }
+
         return {    id,
                     description, 
                     importance, 
@@ -17,7 +27,19 @@ const Task = (function() {
                     completed, 
                     toggleComplete: function() {
                         this.completed = !this.completed;
-                    } };
+                        saveTask(this);  // update local storage
+                    }, 
+                    updateTaskData: function(newData) {
+                        for (const property in newData) {
+                            if (isEditableTaskProperty(property)) {
+                                this[property] = newData[property];
+                            } else {
+                                console.log("WARNING: Tried to update an invalid task property!")
+                            }
+                        }
+                        saveTask(this);  // update local storage
+                    },
+                };
     }
 
     // Function to generate ID for a new task
@@ -27,8 +49,51 @@ const Task = (function() {
         return id;
     }
 
+    function isTaskDataValid(description, importance, dueDate, projects, notes, completed) {
+        let result = true;
+        if (typeof(description) !== "string") {
+            console.log("Error: Description must be a string!")
+            result = false;
+        }
+        if (typeof(importance) !== "number" || !(importance == 0 || importance == 1 || importance == 2)) {
+            console.log("Error: Importance must be an integer 0, 1, or 2!");
+            result = false;
+        };
+        if (!isDate(dueDate)) {
+            console.log("Error: dueDate must be an instance of Date!");
+            result = false;
+        };
+        if (projects.constructor !== Array) {
+            console.log('Error: projects must be an array!');
+            result = false;
+        }
+        if (projects.constructor === Array && projects.length !== 0) {
+            // Projects in a non-empty array. Check that it contains strings.
+            for (let i = 0; i < projects.length; i++) {
+                if (typeof(projects[i]) !== "string") {
+                    console.log("Error: non-string found in projects array!")
+                    result = false;
+                    break;
+                }
+            }
+        }
+        if (typeof(notes) !== "string") {
+            console.log("Error: notes must be a string!");
+            result = false;
+        };
+        if (typeof(completed) !== "boolean") {
+            console.log("Error: completed must be a boolean!");
+            result = false;
+        };
+        return result;
+    }
+
     // Public task adding function
     function addNewTask(description, importance, dueDate, projects, notes, completed) {
+        if (!isTaskDataValid(description, importance, dueDate, projects, notes, completed)) {
+            console.log('Task not created due to invalid task data!');
+            return;
+        }
         const id = getNextId();
         const task = createTask(id, description, importance, dueDate, projects, notes, completed);
         tasks[task.id] = task;
@@ -50,9 +115,9 @@ const Task = (function() {
     }
 
 
-    // Task rehydration function (adds methods back)
-    function rehydrateTask(task) {
-        return createTask( task.id, task.description, task.importance, task.dueDate, task.projects, task.notes, task.completed);
+    // Task rehydration function (adds methods back to task objects loaded from local storage)
+    function rehydrateTask(taskData) {
+        return createTask( taskData.id, taskData.description, taskData.importance, taskData.dueDate, taskData.projects, taskData.notes, taskData.completed);
     }
 
 
@@ -69,13 +134,14 @@ const Task = (function() {
 
     // Function to see if a local storage key is a task key
     function isTaskKey(key) {
-        return key.slice(0,4) == 'task';
+        // Keys of the form "task-{id#}"
+        return key.slice(0,5) == 'task-';
     }
 
     // Function to update the task in local storage
-    function updateTask(id, task) {
-        task[id] = task;
-        saveTask(task);
+    function updateTask(id) {
+        tasks[id] = task;       // update in module
+        saveTask(tasks[id]);    // update in local storage
     }
 
     // Function to save the current ID
@@ -88,5 +154,24 @@ const Task = (function() {
         return parseInt(localStorage.getItem("currentId" )) || 0;
     }
 
-    return { tasks, addNewTask, deleteTask }
+    // Function to return number of tasks in memory
+    function getNumTasks() {
+        return Object.keys(tasks).length;
+    }
+
+    // Function to add a project to a task
+    function addProject(id, projectName) {
+        if (tasks[id].projects.includes(projectName)) {
+            console.log("Project already added to this task!")
+        } else {
+            tasks[id].projects += projectName;
+        }
+    }
+
+    // Function to return array of all tasks
+    function getTasks() {
+        return Object.values(tasks);
+    }
+
+    return { getTasks, getNumTasks, addNewTask, updateTask, deleteTask, addProject }
 })();
