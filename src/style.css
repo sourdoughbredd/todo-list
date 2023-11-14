@@ -80,7 +80,7 @@ header #next-due span {
   user-select: none;
 }
 
-header .add-btn {
+header .add-task-btn {
   font-size: 60px;
   display: grid;
   place-items: center;
@@ -151,7 +151,7 @@ header #profile {
   align-items: center;
 }
 
-.sidebar .project-explorer .add-btn {
+.sidebar .project-explorer .add-project-btn {
   font-size: 2.2rem;
   padding-bottom: 0.3rem;
   cursor: pointer;
