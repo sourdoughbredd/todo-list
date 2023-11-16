@@ -1,4 +1,5 @@
 import { isDate } from 'date-fns';
+import { Project } from './project';
 export { Task };
 
 const Task = (function() {
@@ -27,18 +28,44 @@ const Task = (function() {
                     completed, 
                     toggleComplete: function() {
                         this.completed = !this.completed;
-                        saveTask(this);  // update local storage
+                        saveTaskToLocalStorage(this);  // update local storage
                     }, 
-                    updateTaskData: function(newData) {
-                        for (const property in newData) {
-                            if (isEditableTaskProperty(property)) {
-                                this[property] = newData[property];
-                            } else {
-                                console.log("WARNING: Tried to update an invalid task property!")
+                    update: function(data) {
+                        // Check property names
+                        for (const key in data) {
+                            if (!isEditableTaskProperty(key)) {
+                                console.log(key + " is a non-existent or non-editable task property! Update failed!")
+                                return;
                             }
                         }
-                        saveTask(this);  // update local storage
+                        // Check property value validity
+                        if (!isTaskDataObjectValid(data)) {
+                            console.log("Invalid property value. Update failed!")
+                            return;
+                        }
+                        // Update task
+                        for (const key in data) {
+                            this[key] = data[key];
+                        }
+                        saveTaskToLocalStorage(this);
+                        
                     },
+                    delete: function() {
+                        deleteTask(this.id);
+                    },
+                    addProject: function(projectName) {
+                        if (!this.projects.includes(projectName)) {
+                            this.projects.push(projectName);
+                            saveTaskToLocalStorage(this);
+                        }
+                    },
+                    removeProject: function(projectName) {
+                        if (this.projects.includes(projectName)) {
+                            const index = this.projects.indexOf(projectName);
+                            this.projects.splice(index, 1);
+                            saveTaskToLocalStorage(this);
+                        }
+                    }
                 };
     }
 
@@ -49,43 +76,68 @@ const Task = (function() {
         return id;
     }
 
-    function isTaskDataValid(description, importance, dueDate, projects, notes, completed) {
+    function isTaskDataObjectValid(data) {
         let result = true;
-        if (typeof(description) !== "string") {
-            console.log("Error: Description must be a string!")
-            result = false;
-        }
-        if (typeof(importance) !== "number" || !(importance == 0 || importance == 1 || importance == 2)) {
-            console.log("Error: Importance must be an integer 0, 1, or 2!");
-            result = false;
-        };
-        if (!isDate(dueDate)) {
-            console.log("Error: dueDate must be an instance of Date!");
-            result = false;
-        };
-        if (projects.constructor !== Array) {
-            console.log('Error: projects must be an array!');
-            result = false;
-        }
-        if (projects.constructor === Array && projects.length !== 0) {
-            // Projects in a non-empty array. Check that it contains strings.
-            for (let i = 0; i < projects.length; i++) {
-                if (typeof(projects[i]) !== "string") {
-                    console.log("Error: non-string found in projects array!")
-                    result = false;
+        for (const key in data) {
+            switch (key) {
+                case "description":
+                    if (typeof(data[key]) !== "string") {
+                        console.log("Error: Description must be a string!")
+                        result = false;
+                    }
                     break;
-                }
+                case "importance":
+                    if (typeof(data[key]) !== "number" || !(data[key] == 0 || data[key] == 1 || data[key] == 2)) {
+                        console.log("Error: Importance must be an integer 0, 1, or 2!");
+                        result = false;
+                    }
+                    break;
+                case "dueDate":
+                    if (!isDate(data[key])) {
+                        console.log("Error: dueDate must be an instance of Date!");
+                        result = false;
+                    }
+                    break;
+                case "projects":
+                    if (data[key].constructor !== Array) {
+                        console.log('Error: projects must be an array!');
+                        result = false;
+                    }
+                    if (data[key].constructor === Array && data[key].length !== 0) {
+                        // Projects is a non-empty array. Check that it contains strings.
+                        for (let i = 0; i < data[key].length; i++) {
+                            if (typeof(data[key][i]) !== "string") {
+                                console.log("Error: non-string found in projects array!")
+                                result = false;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                case "notes":
+                    if (typeof(data[key]) !== "string") {
+                        console.log("Error: notes must be a string!");
+                        result = false;
+                    };
+                    break;
+                case "completed":
+                    if (typeof(data[key]) !== "boolean") {
+                        console.log("Error: completed must be a boolean!");
+                        result = false;
+                    }
+                    break;
+                default:
+                    console.log("Invalid property found in data.")
+                    break;
             }
         }
-        if (typeof(notes) !== "string") {
-            console.log("Error: notes must be a string!");
-            result = false;
-        };
-        if (typeof(completed) !== "boolean") {
-            console.log("Error: completed must be a boolean!");
-            result = false;
-        };
         return result;
+    }
+
+
+    function isTaskDataValid(description, importance, dueDate, projects, notes, completed) {
+        const data = { description, importance, dueDate, projects, notes, completed }; // build object
+        return isTaskDataObjectValid(data);
     }
 
     // Public task adding function
@@ -97,17 +149,20 @@ const Task = (function() {
         const id = getNextId();
         const task = createTask(id, description, importance, dueDate, projects, notes, completed);
         tasks[task.id] = task;
-        saveTask(task);
+        saveTaskToLocalStorage(task);
         saveCurrentId();
+        return task;
     }
 
     // Function to save task to local storage
-    function saveTask(task) {
+    function saveTaskToLocalStorage(task) {
         localStorage.setItem(task.id, JSON.stringify(task));
     }
 
-    // Public function to delete task
+    // Public function to delete task using task ID
     function deleteTask(id) {
+        // Delete from from any projects
+        Project.removeTaskFromAllProjects(id);
         // Delete from array
         delete tasks[id];
         // Delete from memory
@@ -127,7 +182,7 @@ const Task = (function() {
             const key = localStorage.key(i);
             if (isTaskKey(key)) {
                 const taskData = JSON.parse(localStorage.getItem(key));
-                tasks[key] = rehydrateTask(taskData);
+                tasks[taskData.id] = rehydrateTask(taskData);
             }
         }
     }
@@ -136,12 +191,6 @@ const Task = (function() {
     function isTaskKey(key) {
         // Keys of the form "task-{id#}"
         return key.slice(0,5) == 'task-';
-    }
-
-    // Function to update the task in local storage
-    function updateTask(id) {
-        tasks[id] = task;       // update in module
-        saveTask(tasks[id]);    // update in local storage
     }
 
     // Function to save the current ID
@@ -173,5 +222,31 @@ const Task = (function() {
         return Object.values(tasks);
     }
 
-    return { getTasks, getNumTasks, addNewTask, updateTask, deleteTask, addProject }
+    function getTaskById(taskId) {
+        if (taskId in tasks) {
+            return tasks[taskId];
+        } else {
+            console.log('ERROR: Task with ID (' + taskId + ") not found in memory!");
+        }
+    }
+    
+
+    function wipeMemory() {
+        // Clear from projects
+        for (const taskId in tasks) {
+            Project.removeTaskFromAllProjects(taskId);
+        }
+        // Clear module memory
+        tasks = {};
+        currentId = 0;
+        // Clear local storage
+        const storedKeys = Object.keys(localStorage);
+        for (const key of storedKeys) {
+            if (isTaskKey(key) || key == "currentId") {
+                localStorage.removeItem(key);
+            }
+        }
+    }
+
+    return { getTasks, getTaskById, getNumTasks, addNewTask, deleteTask, addProject, wipeMemory }
 })();

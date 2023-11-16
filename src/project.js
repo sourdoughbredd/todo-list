@@ -4,30 +4,38 @@ export { Project };
 const Project = (function() {
     
     let projects = {}
-    projects = loadProjects();
+    loadProjects();
 
-    // Function to create a project
-    function createProject(name, description, tasks = []) {
+    // Function to create a project object
+    function createProject(name, description, tasks = {}) {
         return {    name,
                     description,
                     tasks,
                     addTask: function(taskId) {
-                        if (!this.tasks.includes(taskId)) {
-                            this.tasks += taskId;
-                        }
+                        this.tasks[taskId] = taskId;
+                        saveProjectToLocalStorage(this);
+                    },
+                    removeTask: function(taskId) {
+                        delete this.tasks[taskId];
+                        saveProjectToLocalStorage(this);
+                    },
+                    delete: function() {
+                        delete projects[this.name];  // delete from module memory
+                        deleteProjectFromLocalStorage(this); // delete from local storage
                     }
                 };
     }
 
     // Function to add new project
-    function addProject(name, description) {
+    function addNewProject(name, description) {
         if (name in projects) {
             console.log("Tried to add a project that already exists!");
             return;
         }
         const project = createProject(name, description);
         projects[name] = project;
-        saveProject(project)
+        saveProjectToLocalStorage(project)
+        return project;
     }
 
     // Function to add methods back to projects loaded from local storage
@@ -36,8 +44,12 @@ const Project = (function() {
     }
 
     // Function to save projects to local storage
-    function saveProject(project) {
+    function saveProjectToLocalStorage(project) {
         localStorage.setItem("proj-" + project.name, JSON.stringify(project));
+    }
+
+    function deleteProjectFromLocalStorage(project) {
+        localStorage.removeItem("proj-" + project.name);
     }
 
     // Function to load projects from local storage
@@ -56,6 +68,32 @@ const Project = (function() {
         return key.slice(0, 5) == "proj-";
     }
 
-    return { addProject }
+    function getProject(projectName) {
+        return projects[projectName];
+    }
+
+    function getAllProjects() {
+        return Object.values(projects);
+    }
+
+    function removeTaskFromAllProjects(taskId) {
+        for (const projectName in projects) {
+            projects[projectName].removeTask(taskId);
+        }
+    }
+
+    function wipeMemory() {
+        // Clear module memory
+        projects = {};
+        // Clear local storage
+        const storedKeys = Object.keys(localStorage);
+        for (const key of storedKeys) {
+            if (isProjectKey(key)) {
+                localStorage.removeItem(key);
+            }
+        }
+    }
+
+    return { addNewProject, getProject, getAllProjects, removeTaskFromAllProjects, wipeMemory }
 
 })()
