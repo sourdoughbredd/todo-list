@@ -1,3 +1,4 @@
+import { UiControl } from "./uiControl";
 export { loadSidebar }
 
 
@@ -18,4 +19,16 @@ function loadSidebar() {
             <ul class="projects"></ul>
         </div>
     `;
+
+    const todayBtn = sidebar.querySelector(".filter.today");
+    todayBtn.addEventListener("click", UiControl.displayTodaysTasks)
+
+    const weekBtn = sidebar.querySelector(".filter.week");
+    weekBtn.addEventListener("click", UiControl.displayWeeksTasks)
+
+    const importantBtn = sidebar.querySelector(".filter.important");
+    importantBtn.addEventListener("click", UiControl.displayImportantTasks);
+
+    const doneBtn = sidebar.querySelector(".filter.done");
+    doneBtn.addEventListener("click", UiControl.displayCompletedTasks)
 }
