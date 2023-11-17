@@ -1,4 +1,4 @@
-import { isDate } from 'date-fns';
+import { isDate, isToday, isThisWeek } from 'date-fns';
 import { Project } from './project';
 export { Task };
 
@@ -65,6 +65,9 @@ const Task = (function() {
                             this.projects.splice(index, 1);
                             saveTaskToLocalStorage(this);
                         }
+                    },
+                    getProjects: function() {
+                        return this.projects;
                     }
                 };
     }
@@ -163,9 +166,9 @@ const Task = (function() {
     function deleteTask(id) {
         // Delete from from any projects
         Project.removeTaskFromAllProjects(id);
-        // Delete from array
+        // Delete from tasks object
         delete tasks[id];
-        // Delete from memory
+        // Delete from local storage
         localStorage.removeItem(id);
     }
 
@@ -209,7 +212,7 @@ const Task = (function() {
     }
 
     // Function to add a project to a task
-    function addProject(id, projectName) {
+    function addProjectToTask(id, projectName) {
         if (tasks[id].projects.includes(projectName)) {
             console.log("Project already added to this task!")
         } else {
@@ -218,15 +221,35 @@ const Task = (function() {
     }
 
     // Function to return array of all tasks
-    function getTasks() {
+    function getTaskObjects() {
         return Object.values(tasks);
     }
+
+    function getTaskIds() {
+        return Object.keys(tasks);
+    } 
 
     function getTaskById(taskId) {
         if (taskId in tasks) {
             return tasks[taskId];
         } else {
             console.log('ERROR: Task with ID (' + taskId + ") not found in memory!");
+        }
+    }
+
+    function getTodaysTasks() {
+        const tasksArray = getTaskObjects();
+        return tasksArray.filter(task => isToday(task.dueDate))
+    }
+
+    function getWeeksTasks() {
+        const tasksArray = getTaskObjects();
+        return tasks.filter(task => isThisWeek(task.dueDate))
+    }
+
+    function removeProjectFromAllTasks(projectName) {
+        for (const task in Object.values(tasks)) {
+            task.removeProject(projectName);
         }
     }
     
@@ -248,5 +271,6 @@ const Task = (function() {
         }
     }
 
-    return { getTasks, getTaskById, getNumTasks, addNewTask, deleteTask, addProject, wipeMemory }
+    return { getTaskObjects, getTaskIds, getTaskById, getNumTasks, getTodaysTasks, getWeeksTasks, addNewTask, 
+            deleteTask, addProjectToTask, removeProjectFromAllTasks, wipeMemory }
 })();
