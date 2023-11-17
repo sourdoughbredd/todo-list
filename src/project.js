@@ -1,3 +1,4 @@
+import { Task } from './task';
 export { Project };
 
 const Project = (function() {
@@ -11,15 +12,18 @@ const Project = (function() {
                     description,
                     tasks,
                     addTask: function(taskId) {
-                        this.tasks[taskId] = taskId;
-                        saveProjectToLocalStorage(this);
+                        this.tasks[taskId] = taskId; // add to list of tasks
+                        Task.getTaskById(taskId).addProject(this.name); // update project list on the task
+                        saveProjectToLocalStorage(this);    // update local storage
                     },
                     removeTask: function(taskId) {
-                        delete this.tasks[taskId];
-                        saveProjectToLocalStorage(this);
+                        delete this.tasks[taskId];  // remove from list of tasks
+                        Task.getTaskById(taskId).removeProject(this.name); // update project list on the task
+                        saveProjectToLocalStorage(this);    // update local storage
                     },
                     delete: function() {
                         delete projects[this.name];  // delete from module memory
+                        Task.removeProjectFromAllTasks(this.name); // delete from all tasks
                         deleteProjectFromLocalStorage(this); // delete from local storage
                     }
                 };
@@ -71,8 +75,17 @@ const Project = (function() {
         return projects[projectName];
     }
 
+    function getProjectTasks(projectName) {
+        console.log(projectName);
+        return Object.keys(projects[projectName].tasks);
+    }
+
     function getAllProjects() {
         return Object.values(projects);
+    }
+
+    function addTaskToProject(taskId, projectName) {
+        projects[projectName].addTask(taskId);
     }
 
     function removeTaskFromAllProjects(taskId) {
@@ -93,6 +106,6 @@ const Project = (function() {
         }
     }
 
-    return { addNewProject, getProject, getAllProjects, removeTaskFromAllProjects, wipeMemory }
+    return { addNewProject, getProject, getAllProjects, getProjectTasks, addTaskToProject, removeTaskFromAllProjects, wipeMemory }
 
 })()
