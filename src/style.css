@@ -100,6 +100,7 @@ header #profile {
 
 #content {
   flex: 1 0 auto;
+  display: flex;
 }
 
 
@@ -170,6 +171,78 @@ header #profile {
   padding-left: 24px;
   font-size: 1.5rem;
 }
+
+/* Main */
+.main .task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.main .task {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.main .task .radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid black;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 2px;
+  background-clip: content-box;
+  transition: 0.2s;
+}
+
+.main .task[data-importance="0"] .radio {
+  border-color: green;
+}
+
+.main .task[data-importance="1"] .radio {
+  border-color: orange;
+}
+
+.main .task[data-importance="2"] .radio {
+  border-color: red;
+}
+
+.main .task[data-completed="false"] .radio:hover {
+  background-color: rgb(182, 182, 182);
+}
+
+.main .task[data-completed="true"][data-importance="0"] .radio {
+  background-color: green;
+}
+
+.main .task[data-completed="true"][data-importance="1"] .radio {
+  background-color: orange;
+}
+
+.main .task[data-completed="true"][data-importance="2"] .radio {
+  background-color: red;
+}
+
+/* 
+.main .task .task-description {
+
+} */
+
+.main .task .task-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.main .task .task-btns img {
+  cursor: pointer;
+  width: 1.2rem;
+}
+
+.main .task .task-btns img:hover {
+  transform: scale(1.2);
+}
+
 
 /* Footer */
 
