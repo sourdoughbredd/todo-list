@@ -1,6 +1,6 @@
 import { Task } from "./task";
 import { Project } from "./project";
-import { format, isToday, isTomorrow } from "date-fns";
+import { format, isPast, isFuture, isToday, isTomorrow } from "date-fns";
 import deleteIcon from './assets/delete-icon.svg';
 import editIcon from './assets/edit-icon.svg';
 import notesIcon from './assets/notes-icon.svg';
@@ -105,12 +105,14 @@ const UiControl = (function() {
         clearMain();
         const main = document.querySelector(".main");
         main.innerHTML = '<h2>Important</h2>';
-        
+
         // Get all importance values and a map to their tasks
         const tasks = Task.getTaskObjects();
+        // Only include (1) incomplete tasks and (2) completed tasks that are today or future
+        const filteredTasks = tasks.filter(task => !task.completed || (isToday(task.dueDate) || isFuture(task.dueDate)));
         const importanceVals = [];
         const importanceMap = {};
-        tasks.forEach(task => {
+        filteredTasks.forEach(task => {
             const taskImportance = task.importance;
             if (taskImportance in importanceMap) {
                 // Add to the list of tasks for this importance level
@@ -133,8 +135,20 @@ const UiControl = (function() {
         main.appendChild(taskListEl);
     }
 
+    // Display all completed tasks that were due before today
     function displayCompletedTasks() {
+        // Initialize main
         clearMain();
+        const main = document.querySelector(".main");
+        main.innerHTML = '<h2>Completed</h2>';
+
+        // Get all completed tasks that are in the past
+        const tasks = Task.getTaskObjects();
+        const completedTasks = tasks.filter(task => task.completed && isPast(task.dueDate) && !isToday(task.dueDate));
+
+        // Sort by due date and append to DOM
+        const sortedTasks = Task.sortByDueDate(completedTasks);
+        main.appendChild(getTaskListDomElement(sortedTasks));
     }
 
     // Returns the DOM element for a list of tasks
