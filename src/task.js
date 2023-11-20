@@ -1,4 +1,4 @@
-import { isDate, isToday, isThisWeek } from 'date-fns';
+import { isDate, isToday, isThisWeek, isFuture } from 'date-fns';
 import { Project } from './project';
 export { Task };
 
@@ -237,14 +237,25 @@ const Task = (function() {
         }
     }
 
+    // Returns tasks due today
     function getTodaysTasks() {
         const tasksArray = getTaskObjects();
         return tasksArray.filter(task => isToday(task.dueDate))
     }
 
+    // Returns tasks due from today to the end of the week
     function getWeeksTasks() {
         const tasksArray = getTaskObjects();
-        return tasks.filter(task => isThisWeek(task.dueDate))
+        const weeksTasks = tasksArray.filter(task => isThisWeek(task.dueDate) && (isToday(task.dueDate) || isFuture(task.dueDate)));
+        return sortByDueDate(weeksTasks);
+    }
+
+    function sortByDueDate(tasks) {
+        return tasks.sort((a, b) => a.dueDate - b.dueDate);
+    }
+
+    function sortByImportance(tasks) {
+        return tasks.sort((a, b) => b.importance - a.importance);
     }
 
     function removeProjectFromAllTasks(projectName) {
@@ -272,5 +283,5 @@ const Task = (function() {
     }
 
     return { getTaskObjects, getTaskIds, getTaskById, getNumTasks, getTodaysTasks, getWeeksTasks, addNewTask, 
-            deleteTask, addProjectToTask, removeProjectFromAllTasks, wipeMemory }
+            deleteTask, addProjectToTask, sortByDueDate, sortByImportance, removeProjectFromAllTasks, wipeMemory }
 })();
