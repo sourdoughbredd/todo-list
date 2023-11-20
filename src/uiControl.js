@@ -1,6 +1,6 @@
 import { Task } from "./task";
 import { Project } from "./project";
-import { isToday, format } from "date-fns";
+import { format, isToday, isTomorrow } from "date-fns";
 import deleteIcon from './assets/delete-icon.svg';
 import editIcon from './assets/edit-icon.svg';
 import notesIcon from './assets/notes-icon.svg';
@@ -17,13 +17,16 @@ const UiControl = (function() {
         clearMain();
         // Get projects for today's tasks
         const todaysTasks = Task.getTodaysTasks();
-        let todaysProjects = [];
+        let todaysProjects = {};  // map from projects to tasks
         todaysTasks.forEach(task => {
             const taskProjects = task.getProjects();
             taskProjects.forEach(projectName => {
-                if (!todaysProjects.includes(projectName)) {
-                    // New project found. Add to array.
-                    todaysProjects.push(projectName);
+                if (!todaysProjects.hasOwnProperty(projectName)) {
+                    // New project found. Add to object.
+                    todaysProjects[projectName] = [task];
+                } else {
+                    // Project already exists. Push task to it's values.
+                    todaysProjects[projectName].push(task);
                 }
             });
         });
@@ -36,33 +39,69 @@ const UiControl = (function() {
             `;
 
         // Create project elements
-        todaysProjects.forEach(projectName => {
+        for (const [projectName, projectTasks] of Object.entries(todaysProjects)) {
             // Initialize the project element
             const projectContainer = document.createElement("div");
             projectContainer.classList.add('project-container');
             projectContainer.innerHTML = `
                 <h3>${projectName}</h3>
-                <ul class="task-list"></ul>
             `;
 
             // Add task elements to the project task list
-            const projectTaskIds = Project.getProjectTasks(projectName);
-            const taskListEl = projectContainer.querySelector(".task-list");
-            projectTaskIds.forEach(taskId => {
-                const taskEl = getTaskDomElement(taskId);
-                taskListEl.appendChild(taskEl);
-            });
+            const taskListEl = getTaskListDomElement(projectTasks);
+            projectContainer.appendChild(taskListEl);
 
             // Append project to main
             main.appendChild(projectContainer);
-        });
+        }
     }
 
+    // Displays weeks tasks in main
     function displayWeeksTasks() {
+        // Initialize main
+        clearMain();
+        const main = document.querySelector(".main");
+        main.innerHTML = `
+            <h2>This Week</h2>
+            <div class="days"></div>
+        `;
+        const daysContainer = main.querySelector(".days");
+
         // Get this weeks tasks
         const weeksTasks = Task.getWeeksTasks();
-        clearMain();
+        const sortedWeeksTasks = Task.sortByDueDate(weeksTasks);
+
+        // For each day of the week, add a task list
+        let daysOfWeekStrs = []; // ordered array of day of week strings
+        let daysOfWeekMap = {}; // maps days of week strings to tasks that day
+        sortedWeeksTasks.forEach((task) => {
+            const currDayOfWeekStr = isToday(task.dueDate) ? 'Today' : isTomorrow(task.dueDate) ? 'Tomorrow' : format(task.dueDate,'cccc');
+            if (!(currDayOfWeekStr in daysOfWeekMap)) {
+                // Add day to the array and map. Map to task.
+                daysOfWeekStrs.push(currDayOfWeekStr);
+                daysOfWeekMap[currDayOfWeekStr] = [task];
+            } else {
+                // Day of week already in map. Push task to its value.
+                daysOfWeekMap[currDayOfWeekStr].push(task);
+            }
+        });
+        daysOfWeekStrs.forEach(dayStr => {
+            const currDayContainer = document.createElement("div");
+            currDayContainer.classList.add("day");
+            const currDayTasks = Task.sortByImportance(daysOfWeekMap[dayStr]);
+            const formattedDate = getFormattedDate(currDayTasks[0].dueDate);
+            currDayContainer.innerHTML = `
+                <span>${dayStr}</span>
+                <span>${formattedDate}</span>
+            `;
+            currDayContainer.appendChild(getTaskListDomElement(currDayTasks))
+            daysContainer.appendChild(currDayContainer);
+        })
+        // For each container, add the task list (sorted by importance)
+
+        // Append day to the dom
     }
+
 
     function displayImportantTasks() {
         clearMain();
@@ -72,9 +111,18 @@ const UiControl = (function() {
         clearMain();
     }
 
-    function getTaskDomElement(taskId) {
+    // Returns the DOM element for a list of tasks
+    function getTaskListDomElement(tasks) {
+        const taskListEl = document.createElement("ul");
+        taskListEl.classList.add("task-list");
+        tasks.forEach(task => {
+            taskListEl.appendChild(getTaskDomElement(task));
+        })
+        return taskListEl;
+    }
+
+    function getTaskDomElement(task) {
         // Get task and add data to DOM element
-        const task = Task.getTaskById(taskId);
         const taskEl = document.createElement("li");
         taskEl.classList.add("task");
         taskEl.dataset.importance = task.importance;
@@ -118,13 +166,18 @@ const UiControl = (function() {
         const dueDateEl = document.createElement("span");
         dueDateEl.classList.add("task-due-date");
         dueDateEl.setAttribute("title", "Due Date");
-        const weekday = format(task.dueDate, "ccc");
-        const month = format(task.dueDate, "MMM");
-        const day = format(task.dueDate, "dd")
-        dueDateEl.innerText = weekday + " " + month + " " + day; 
+        dueDateEl.innerText = getFormattedDate(task.dueDate); 
         taskEl.appendChild(dueDateEl);
 
         return taskEl;
+    }
+
+    // Returns date string formatted as, for example, Mon Nov 20
+    function getFormattedDate(date) {
+        const weekday = format(date, "ccc");
+        const month = format(date, "MMM");
+        const day = format(date, "dd")
+        return weekday + " " + month + " " + day; 
     }
     
     function getRadioButton() {
