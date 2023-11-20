@@ -94,17 +94,43 @@ const UiControl = (function() {
                 <span>${dayStr}</span>
                 <span>${formattedDate}</span>
             `;
-            currDayContainer.appendChild(getTaskListDomElement(currDayTasks))
+            currDayContainer.appendChild(getTaskListDomElement(currDayTasks, false))
             daysContainer.appendChild(currDayContainer);
         })
-        // For each container, add the task list (sorted by importance)
-
-        // Append day to the dom
     }
 
 
     function displayImportantTasks() {
+        // Initialize main
         clearMain();
+        const main = document.querySelector(".main");
+        main.innerHTML = '<h2>Important</h2>';
+        
+        // Get all importance values and a map to their tasks
+        const tasks = Task.getTaskObjects();
+        const importanceVals = [];
+        const importanceMap = {};
+        tasks.forEach(task => {
+            const taskImportance = task.importance;
+            if (taskImportance in importanceMap) {
+                // Add to the list of tasks for this importance level
+                importanceMap[taskImportance].push(task);
+            } else {
+                // Add this importance level and add the task to it.
+                importanceVals.push(taskImportance);
+                importanceMap[taskImportance] = [task];
+            }
+        });
+        importanceVals.sort((a, b) => b - a); // Sort in descending order
+        // For each importance value, get the task and sort by due date
+        const taskListEl = getTaskListDomElement([]);
+        importanceVals.forEach(importanceVal => {
+            const importanceTasks = importanceMap[importanceVal];
+            const sortedImportanceTasks = Task.sortByDueDate(importanceTasks);
+            appendToTaskListDomElement(taskListEl, sortedImportanceTasks);
+        });
+
+        main.appendChild(taskListEl);
     }
 
     function displayCompletedTasks() {
@@ -112,16 +138,22 @@ const UiControl = (function() {
     }
 
     // Returns the DOM element for a list of tasks
-    function getTaskListDomElement(tasks) {
+    function getTaskListDomElement(tasks, addDates=true) {
         const taskListEl = document.createElement("ul");
         taskListEl.classList.add("task-list");
         tasks.forEach(task => {
-            taskListEl.appendChild(getTaskDomElement(task));
+            taskListEl.appendChild(getTaskDomElement(task, addDates));
         })
         return taskListEl;
     }
 
-    function getTaskDomElement(task) {
+    function appendToTaskListDomElement(taskListEl, tasks, addDates=true) {
+        tasks.forEach(task => {
+            taskListEl.appendChild(getTaskDomElement(task, addDates));
+        })
+    }
+
+    function getTaskDomElement(task, addDates=true) {
         // Get task and add data to DOM element
         const taskEl = document.createElement("li");
         taskEl.classList.add("task");
@@ -163,12 +195,14 @@ const UiControl = (function() {
         taskEl.appendChild(taskBtns);
 
         // Add due date
-        const dueDateEl = document.createElement("span");
-        dueDateEl.classList.add("task-due-date");
-        dueDateEl.setAttribute("title", "Due Date");
-        dueDateEl.innerText = getFormattedDate(task.dueDate); 
-        taskEl.appendChild(dueDateEl);
-
+        if (addDates) {
+            const dueDateEl = document.createElement("span");
+            dueDateEl.classList.add("task-due-date");
+            dueDateEl.setAttribute("title", "Due Date");
+            dueDateEl.innerText = getFormattedDate(task.dueDate); 
+            taskEl.appendChild(dueDateEl);
+        }
+        
         return taskEl;
     }
 
