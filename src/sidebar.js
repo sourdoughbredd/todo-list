@@ -6,6 +6,7 @@ function loadSidebar() {
     const sidebar = document.querySelector(".sidebar");
     sidebar.innerHTML = `
         <ul class="task-explorer">
+            <li class="filter all" tabindex="0">All</li>
             <li class="filter today" tabindex="0">Today</li>
             <li class="filter week" tabindex="0">This Week</li>
             <li class="filter important" tabindex="0">Important</li>
