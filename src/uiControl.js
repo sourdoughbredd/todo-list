@@ -1,6 +1,6 @@
 import { Task } from "./task";
 import { Project } from "./project";
-import { format, isPast, isFuture, isToday, isTomorrow } from "date-fns";
+import { format, isPast, isFuture, isBefore, startOfToday, isToday, isTomorrow, isThisWeek, isThisMonth } from "date-fns";
 import deleteIcon from './assets/delete-icon.svg';
 import editIcon from './assets/edit-icon.svg';
 import notesIcon from './assets/notes-icon.svg';
@@ -9,8 +9,69 @@ export { UiControl };
 
 const UiControl = (function() {
 
+    function addProjectsToSidebar() {
+        // Get projects
+        const projectNames = Project.getAllProjectNames();
+
+        // Create sidebar elements
+        const projectsListEl = document.querySelector(".sidebar .projects");
+        projectNames.forEach(projectName => {
+            const projectEl = document.createElement("li");
+            projectEl.classList.add("filter", "project");
+            projectEl.setAttribute('tabindex', '0');
+            projectEl.innerText = projectName;
+            projectEl.addEventListener('click', (event) => displayProject(event));
+            projectsListEl.appendChild(projectEl);
+        });
+
+
+    }
+
     function clearMain() {
         document.querySelector(".main").innerHTML = "";
+    }
+
+    // Displays all future tasks grouped by time frame and includes 
+    function displayAllTasks() {
+         // Initialize main
+        clearMain();
+        const main = document.querySelector(".main");
+        main.innerHTML = `
+            <h2>All Tasks</h2>
+        `;
+
+        // Get tasks, sort and filter
+        const tasks = Task.getTaskObjects();
+        const sortedDateTasks = Task.sortByDueDate(tasks).filter(task => 
+            !task.completed || (isToday(task.dueDate) || isFuture(task.dueDate)));
+        // Group by time frame
+        let timeFrameStrs = [];
+        let timeFrameMap = {};
+        sortedDateTasks.forEach(task => {
+            const timeStr = getTimeFrameStrLong(task.dueDate);
+            // Add to the list and map
+            if (timeFrameStrs.includes(timeStr)) {
+                // Already encountered this one. Just add the task to its list.
+                timeFrameMap[timeStr].push(task);
+            } else {
+                // First time seeing this timeStr. Save it and initialize its task list
+                timeFrameStrs.push(timeStr);
+                timeFrameMap[timeStr] = [task];
+            }
+        });
+
+        // For each time frame group, create a task list dom element
+        timeFrameStrs.forEach(timeStr => {
+            const currTimeFrameEl = document.createElement("div");
+            currTimeFrameEl.classList.add("time-frame");
+            const currTimeFrameTasks = Task.sortByImportance(timeFrameMap[timeStr]);
+            const formattedDate = getFormattedDate(currTimeFrameTasks[0].dueDate);
+            currTimeFrameEl.innerHTML = `
+                <span>${timeStr}</span>
+            `;
+            currTimeFrameEl.appendChild(getTaskListDomElement(currTimeFrameTasks))
+            main.appendChild(currTimeFrameEl);
+        })
     }
 
     function displayTodaysTasks() {
@@ -87,7 +148,7 @@ const UiControl = (function() {
         });
         daysOfWeekStrs.forEach(dayStr => {
             const currDayContainer = document.createElement("div");
-            currDayContainer.classList.add("day");
+            currDayContainer.classList.add("time-frame");
             const currDayTasks = Task.sortByImportance(daysOfWeekMap[dayStr]);
             const formattedDate = getFormattedDate(currDayTasks[0].dueDate);
             currDayContainer.innerHTML = `
@@ -99,7 +160,7 @@ const UiControl = (function() {
         })
     }
 
-
+    // Display tasks by importance
     function displayImportantTasks() {
         // Initialize main
         clearMain();
@@ -142,14 +203,60 @@ const UiControl = (function() {
         const main = document.querySelector(".main");
         main.innerHTML = '<h2>Completed</h2>';
 
-        // Get all completed tasks that are in the past
+        // Get all completed tasks
         const tasks = Task.getTaskObjects();
-        const completedTasks = tasks.filter(task => task.completed && isPast(task.dueDate) && !isToday(task.dueDate));
+        const completedTasks = tasks.filter(task => task.completed);
 
         // Sort by due date and append to DOM
-        const sortedTasks = Task.sortByDueDate(completedTasks);
+        const sortedTasks = Task.sortByDueDate(completedTasks).reverse();
         main.appendChild(getTaskListDomElement(sortedTasks));
     }
+
+
+    function displayProject(event) {
+        // Get project name that was clicked
+        const projectName = event.target.innerText;
+
+        // Initialize main
+        clearMain();
+        const main = document.querySelector(".main");
+        main.innerHTML = `<h2>${projectName}</h2>`;
+
+        // Get tasks for this project
+        const taskIds = Project.getProjectTasks(projectName);
+        const tasks = taskIds.map(id => Task.getTaskById(id));
+        const processedTasks = Task.sortByDueDate(tasks).filter(task => 
+            !task.completed || (isToday(task.dueDate) || isFuture(task.dueDate)));
+
+        // Group by time frame
+        let timeFrameStrs = [];
+        let timeFrameMap = {};
+        processedTasks.forEach(task => {
+            const timeStr = getTimeFrameStrLong(task.dueDate);
+            // Add to the list and map
+            if (timeFrameStrs.includes(timeStr)) {
+                // Already encountered this one. Just add the task to its list.
+                timeFrameMap[timeStr].push(task);
+            } else {
+                // First time seeing this timeStr. Save it and initialize its task list
+                timeFrameStrs.push(timeStr);
+                timeFrameMap[timeStr] = [task];
+            }
+        });
+
+        // For each time frame group, create a task list dom element
+        timeFrameStrs.forEach(timeStr => {
+            const currTimeFrameEl = document.createElement("div");
+            currTimeFrameEl.classList.add("time-frame");
+            const currTimeFrameTasks = Task.sortByImportance(timeFrameMap[timeStr]);
+            currTimeFrameEl.innerHTML = `
+                <span>${timeStr}</span>
+            `;
+            currTimeFrameEl.appendChild(getTaskListDomElement(currTimeFrameTasks))
+            main.appendChild(currTimeFrameEl);
+        })
+    }
+
 
     // Returns the DOM element for a list of tasks
     function getTaskListDomElement(tasks, addDates=true) {
@@ -227,6 +334,23 @@ const UiControl = (function() {
         const day = format(date, "dd")
         return weekday + " " + month + " " + day; 
     }
+
+    function getTimeFrameStrLong(date) {
+        // Get the string representation for the time frame
+        if (isBefore(date, startOfToday())) {
+            return 'Overdue';
+        } else if (isToday(date)) {
+            return 'Today';
+        } else if (isTomorrow(date)) {
+            return 'Tomorrow';
+        } else if (isThisWeek(date)) {
+            return 'This Week';
+        } else if (isThisMonth(date)) {
+            return 'This Month';
+        } else {
+            return 'After This Month'
+        }
+    }
     
     function getRadioButton() {
         const radioBtn = document.createElement("div");
@@ -283,5 +407,6 @@ const UiControl = (function() {
         });
     }
 
-    return { displayTodaysTasks, displayWeeksTasks, displayImportantTasks, displayCompletedTasks };
+    return { displayAllTasks, displayTodaysTasks, displayWeeksTasks, displayImportantTasks, displayCompletedTasks,
+            addProjectsToSidebar };
 })()
