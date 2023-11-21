@@ -84,6 +84,10 @@ const Project = (function() {
         return Object.values(projects);
     }
 
+    function getAllProjectNames() {
+        return Object.keys(projects);
+    }
+
     function addTaskToProject(taskId, projectName) {
         projects[projectName].addTask(taskId);
     }
@@ -106,6 +110,7 @@ const Project = (function() {
         }
     }
 
-    return { addNewProject, getProject, getAllProjects, getProjectTasks, addTaskToProject, removeTaskFromAllProjects, wipeMemory }
+    return { addNewProject, getProject, getAllProjects, getAllProjectNames, getProjectTasks, addTaskToProject, 
+            removeTaskFromAllProjects, wipeMemory }
 
 })()
