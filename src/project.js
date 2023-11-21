@@ -76,7 +76,6 @@ const Project = (function() {
     }
 
     function getProjectTasks(projectName) {
-        console.log(projectName);
         return Object.keys(projects[projectName].tasks);
     }
 
