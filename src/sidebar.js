@@ -21,6 +21,9 @@ function loadSidebar() {
         </div>
     `;
 
+    const allBtn = sidebar.querySelector(".filter.all");
+    allBtn.addEventListener('click', UiControl.displayAllTasks);
+
     const todayBtn = sidebar.querySelector(".filter.today");
     todayBtn.addEventListener("click", UiControl.displayTodaysTasks)
 
