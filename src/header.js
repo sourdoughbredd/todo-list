@@ -1,6 +1,7 @@
 import logo from './assets/todo-logo.png';
 import profilePic from './assets/headshot.png';
 import clock from './assets/clock.svg';
+import { showAddTaskForm } from './forms';
 
 export { loadHeader }
 
@@ -15,4 +16,7 @@ function loadHeader() {
         </div>
         <img src=${profilePic} alt="Profile photo" id="profile">
     `;
+
+    const addTaskBtn = header.querySelector('.add-task-btn');
+    addTaskBtn.addEventListener('click', showAddTaskForm)
 }
