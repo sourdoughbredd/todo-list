@@ -1,7 +1,7 @@
 import logo from './assets/todo-logo.png';
 import profilePic from './assets/headshot.png';
 import clock from './assets/clock.svg';
-import { showAddTaskForm } from './forms';
+import { Forms } from './forms';
 
 export { loadHeader }
 
@@ -18,5 +18,5 @@ function loadHeader() {
     `;
 
     const addTaskBtn = header.querySelector('.add-task-btn');
-    addTaskBtn.addEventListener('click', showAddTaskForm)
+    addTaskBtn.addEventListener('click', Forms.showAddTaskForm)
 }
