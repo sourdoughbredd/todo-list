@@ -1,5 +1,6 @@
 import { UiControl } from "./uiControl";
 import { Project } from "./project";
+import { Forms } from "./forms";
 export { loadSidebar }
 
 
@@ -22,6 +23,7 @@ function loadSidebar() {
     // Add projects
     addProjectList();
 
+    // Add event listeners for nav buttons
     const allBtn = sidebar.querySelector(".filter.all");
     allBtn.addEventListener('click', UiControl.displayAllTasks);
 
@@ -37,8 +39,6 @@ function loadSidebar() {
     const doneBtn = sidebar.querySelector(".filter.done");
     doneBtn.addEventListener("click", UiControl.displayCompletedTasks)
 
-    // const addProjectButton = sidebar.querySelector(".add-project-btn");
-    // addProjectButton.addEventListener('click', (event) => UiControl.displayAddProjectForm(event));
 }
 
 // Function to add all saved projects ot the project list
@@ -90,6 +90,9 @@ function addProjectPressed(event) {
         <input type="text" name="project-name" id="project-input" placeholder="Project Name" autofocus="autofocus" required></input>
     `;
 
+    // Add event listener for document clicks to remove the input element
+    document.addEventListener('click', event => documentClicked(event));
+
     // Attach event listener for form submission
     newProjectInput.addEventListener("submit", event => newProjectSubmitted(event));
 
@@ -105,10 +108,24 @@ function newProjectSubmitted(event) {
     const input = document.querySelector('#project-input');
     const projectName = input.value;
     Project.addNewProject(projectName);
-    // Remove the form from th DOM
+    // Refresh the project list in the add task form
+    Forms.refreshProjectList();
+    // Remove the form from the DOM
     document.querySelector(".add-project-form").remove();
     // Add to sidebar list
     addProjectToList(projectName);
     // Add add project button back to sidebar list
     addAddProjectElement();
+}
+
+// Close the form if the user clicks anywhere but the add project form
+function documentClicked(event) {
+    if (document.querySelector('.add-project-form')) {
+        if (!event.target.closest('.add-project-form') && !event.target.closest('.add-project-btn')) {
+            // Remove the form from the DOM
+            document.querySelector(".add-project-form").remove();
+            document.removeEventListener('click', event => documentClicked(event));
+            addAddProjectElement();
+        }
+    }
 }
