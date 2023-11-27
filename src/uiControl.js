@@ -1,6 +1,6 @@
 import { Task } from "./task";
 import { Project } from "./project";
-import { format, isPast, isFuture, isBefore, startOfToday, isToday, isTomorrow, isThisWeek, isThisMonth } from "date-fns";
+import { format, isFuture, isBefore, startOfToday, isToday, isTomorrow, isThisWeek, isThisMonth } from "date-fns";
 import deleteIcon from './assets/delete-icon.svg';
 import editIcon from './assets/edit-icon.svg';
 import notesIcon from './assets/notes-icon.svg';
