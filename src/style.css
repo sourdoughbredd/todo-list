@@ -19,6 +19,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  position: relative;
 }
 
 ul {
@@ -145,22 +146,11 @@ header #profile {
   gap: 24px;
 }
 
-.sidebar .project-explorer .title h3 {
+.sidebar .project-explorer .title {
   margin: 0;
   font-size: 2rem;
   display: flex;
   align-items: center;
-}
-
-.sidebar .project-explorer .add-project-btn {
-  font-size: 2.2rem;
-  padding-bottom: 0.3rem;
-  cursor: pointer;
-  user-select: none;
-}
-
-.sidebar .project-explorer .add-btn:hover {
-  transform: scale(1.2);
 }
 
 .sidebar .project-explorer .projects {
@@ -170,6 +160,14 @@ header #profile {
   margin-top: 18px;
   padding-left: 24px;
   font-size: 1.5rem;
+}
+
+.sidebar .project-explorer #project-input {
+  font-size: 1.5rem;
+  border: none;
+  border-bottom: 2px solid rgb(166, 166, 166);
+  background-color: rgba(241, 0, 0, 0);
+  padding: 2px 2px;
 }
 
 /* Main */
@@ -185,7 +183,8 @@ header #profile {
   align-items: center;
 }
 
-.main .task .radio {
+.main .task .radio,
+.add-task-form .radio {
   width: 20px;
   height: 20px;
   border: 2px solid black;
@@ -196,38 +195,40 @@ header #profile {
   transition: 0.2s;
 }
 
-.main .task[data-importance="0"] .radio {
+.main .task[data-importance="0"] .radio,
+.add-task-form .radio[data-importance="0"] {
   border-color: green;
 }
 
-.main .task[data-importance="1"] .radio {
+.main .task[data-importance="1"] .radio,
+.add-task-form .radio[data-importance="1"] {
   border-color: orange;
 }
 
-.main .task[data-importance="2"] .radio {
+.main .task[data-importance="2"] .radio,
+.add-task-form .radio[data-importance="2"] {
   border-color: red;
 }
 
-.main .task[data-completed="false"] .radio:hover {
+.main .task[data-completed="false"] .radio:hover,
+.add-task-form .radio:not(:checked):hover {
   background-color: rgb(182, 182, 182);
 }
 
-.main .task[data-completed="true"][data-importance="0"] .radio {
+.main .task[data-completed="true"][data-importance="0"] .radio,
+.add-task-form .radio[data-importance="0"].checked {
   background-color: green;
 }
 
-.main .task[data-completed="true"][data-importance="1"] .radio {
+.main .task[data-completed="true"][data-importance="1"] .radio,
+.add-task-form .radio[data-importance="1"].checked  {
   background-color: orange;
 }
 
-.main .task[data-completed="true"][data-importance="2"] .radio {
+.main .task[data-completed="true"][data-importance="2"] .radio,
+.add-task-form .radio[data-importance="2"].checked  {
   background-color: red;
 }
-
-/* 
-.main .task .task-description {
-
-} */
 
 .main .task .task-btns {
   display: flex;
@@ -243,6 +244,58 @@ header #profile {
   transform: scale(1.2);
 }
 
+
+/* Forms */
+
+.add-task-form {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background-color: rgb(237, 233, 224);
+  border-radius: 10px;
+  padding: 36px;
+}
+
+.add-task-form .close-btn {
+  position: absolute;
+  right: 24px;
+  top: 24px;
+  cursor: pointer;
+}
+
+.add-task-form .task-container {
+  display: flex;
+}
+
+.add-task-form .importance-container {
+  display: flex;
+}
+
+.add-task-form .radio-group {
+  display: flex;
+}
+
+.add-task-form .add-to-project-btn {
+  position: relative;
+  border: 1px solid black;
+  cursor: pointer;
+}
+
+.add-task-form .add-to-project-btn .dropdown-arrow {
+  font-size: 0.8rem;
+}
+
+.add-task-form .project-select-dropdown {
+  position: absolute;
+  width: inherit;
+  border: 1px solid black;
+  background-color: white;
+  padding: 10px;
+  text-wrap: nowrap;
+}
 
 /* Footer */
 
@@ -272,3 +325,13 @@ footer div {
   transform: scale(1.1);
 }
 
+/* Properties we don't want overwritten */
+
+.hidden {
+  display: none;
+}
+
+.disabled {
+  pointer-events: none; 
+  opacity: 0.75;
+}
