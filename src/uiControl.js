@@ -1,5 +1,6 @@
 import { Task } from "./task";
 import { Project } from "./project";
+import { Forms } from "./forms";
 import { format, isPast, isFuture, isBefore, startOfToday, isToday, isTomorrow, isThisWeek, isThisMonth } from "date-fns";
 import deleteIcon from './assets/delete-icon.svg';
 import editIcon from './assets/edit-icon.svg';
@@ -8,24 +9,6 @@ import notesIcon from './assets/notes-icon.svg';
 export { UiControl };
 
 const UiControl = (function() {
-
-    function addProjectsToSidebar() {
-        // Get projects
-        const projectNames = Project.getAllProjectNames();
-
-        // Create sidebar elements
-        const projectsListEl = document.querySelector(".sidebar .projects");
-        projectNames.forEach(projectName => {
-            const projectEl = document.createElement("li");
-            projectEl.classList.add("filter", "project");
-            projectEl.setAttribute('tabindex', '0');
-            projectEl.innerText = projectName;
-            projectEl.addEventListener('click', (event) => displayProject(event));
-            projectsListEl.appendChild(projectEl);
-        });
-
-
-    }
 
     function clearMain() {
         document.querySelector(".main").innerHTML = "";
@@ -41,7 +24,7 @@ const UiControl = (function() {
         `;
 
         // Get tasks, sort and filter
-        const tasks = Task.getTaskObjects();
+        const tasks = Task.getAllTasks();
         const sortedDateTasks = Task.sortByDueDate(tasks).filter(task => 
             !task.completed || (isToday(task.dueDate) || isFuture(task.dueDate)));
         // Group by time frame
@@ -78,16 +61,17 @@ const UiControl = (function() {
         clearMain();
         // Get projects for today's tasks
         const todaysTasks = Task.getTodaysTasks();
+        const projects = Project.getAllProjects();
         let todaysProjects = {};  // map from projects to tasks
         todaysTasks.forEach(task => {
-            const taskProjects = task.getProjects();
-            taskProjects.forEach(projectName => {
-                if (!todaysProjects.hasOwnProperty(projectName)) {
+            const taskProjects = projects.filter(project => project.hasTask(task));
+            taskProjects.forEach(project => {
+                if (!todaysProjects.hasOwnProperty(project.name)) {
                     // New project found. Add to object.
-                    todaysProjects[projectName] = [task];
+                    todaysProjects[project.name] = [task];
                 } else {
                     // Project already exists. Push task to it's values.
-                    todaysProjects[projectName].push(task);
+                    todaysProjects[project.name].push(task);
                 }
             });
         });
@@ -168,7 +152,7 @@ const UiControl = (function() {
         main.innerHTML = '<h2>Important</h2>';
 
         // Get all importance values and a map to their tasks
-        const tasks = Task.getTaskObjects();
+        const tasks = Task.getAllTasks();
         // Only include (1) incomplete tasks and (2) completed tasks that are today or future
         const filteredTasks = tasks.filter(task => !task.completed || (isToday(task.dueDate) || isFuture(task.dueDate)));
         const importanceVals = [];
@@ -204,7 +188,7 @@ const UiControl = (function() {
         main.innerHTML = '<h2>Completed</h2>';
 
         // Get all completed tasks
-        const tasks = Task.getTaskObjects();
+        const tasks = Task.getAllTasks();
         const completedTasks = tasks.filter(task => task.completed);
 
         // Sort by due date and append to DOM
@@ -216,6 +200,7 @@ const UiControl = (function() {
     function displayProject(event) {
         // Get project name that was clicked
         const projectName = event.target.innerText;
+        const project = Project.getProjectByName(projectName);
 
         // Initialize main
         clearMain();
@@ -223,8 +208,7 @@ const UiControl = (function() {
         main.innerHTML = `<h2>${projectName}</h2>`;
 
         // Get tasks for this project
-        const taskIds = Project.getProjectTasks(projectName);
-        const tasks = taskIds.map(id => Task.getTaskById(id));
+        const tasks = project.getTasks();
         const processedTasks = Task.sortByDueDate(tasks).filter(task => 
             !task.completed || (isToday(task.dueDate) || isFuture(task.dueDate)));
 
@@ -363,9 +347,10 @@ const UiControl = (function() {
         // Update task
         const taskEl = getClosestTaskAncestor(event.target);
         const taskId = taskEl.dataset.taskId;
-        Task.getTaskById(taskId).toggleComplete();
+        const task = Task.getTaskById(taskId)
+        task.toggleComplete();
         // Update the DOM elements
-        refreshTaskDataset(taskId);
+        refreshTaskDataset(task);
     }
 
     function deleteTaskBtnClicked(event) {
@@ -394,11 +379,9 @@ const UiControl = (function() {
     }
 
     // Function to refresh all DOM elements for the given task with the latest task data
-    function refreshTaskDataset(taskId) {
-        // Get the latest task object
-        const task = Task.getTaskById(taskId);
+    function refreshTaskDataset(task) {
         // Get all of the DOM elements for the task
-        const taskElements = document.querySelectorAll(`.task[data-task-id=${taskId}]`);
+        const taskElements = document.querySelectorAll(`.task[data-task-id=${task.id}]`);
         // Refresh DOM element datasets with latest task data
         taskElements.forEach(taskEl => {
             taskEl.dataset.importance = task.importance;
@@ -408,5 +391,5 @@ const UiControl = (function() {
     }
 
     return { displayAllTasks, displayTodaysTasks, displayWeeksTasks, displayImportantTasks, displayCompletedTasks,
-            addProjectsToSidebar };
+        displayProject };
 })()

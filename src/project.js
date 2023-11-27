@@ -11,19 +11,22 @@ const Project = (function() {
         return {    name,
                     description,
                     tasks,
-                    addTask: function(taskId) {
-                        this.tasks[taskId] = taskId; // add to list of tasks
-                        Task.getTaskById(taskId).addProject(this.name); // update project list on the task
+                    getTasks: function() {
+                        return Object.values(this.tasks);
+                    },
+                    hasTask: function(task) {
+                        return task.id in this.tasks;
+                    },
+                    addTask: function(task) {
+                        this.tasks[task.id] = task; // add to list of tasks
                         saveProjectToLocalStorage(this);    // update local storage
                     },
-                    removeTask: function(taskId) {
-                        delete this.tasks[taskId];  // remove from list of tasks
-                        Task.getTaskById(taskId).removeProject(this.name); // update project list on the task
+                    removeTask: function(task) {
+                        delete this.tasks[task.id];  // remove from list of tasks
                         saveProjectToLocalStorage(this);    // update local storage
                     },
                     delete: function() {
                         delete projects[this.name];  // delete from module memory
-                        Task.removeProjectFromAllTasks(this.name); // delete from all tasks
                         deleteProjectFromLocalStorage(this); // delete from local storage
                     }
                 };
@@ -71,12 +74,12 @@ const Project = (function() {
         return key.slice(0, 5) == "proj-";
     }
 
-    function getProject(projectName) {
+    function getProjectByName(projectName) {
         return projects[projectName];
     }
 
-    function getProjectTasks(projectName) {
-        return Object.keys(projects[projectName].tasks);
+    function getProjectTaskIds(projectName) {
+        return Object.values(projects[projectName].tasks);
     }
 
     function getAllProjects() {
@@ -87,13 +90,13 @@ const Project = (function() {
         return Object.keys(projects);
     }
 
-    function addTaskToProject(taskId, projectName) {
-        projects[projectName].addTask(taskId);
-    }
+    // function addTaskToProject(task, project) {
+    //     project.addTask(task.id);
+    // }
 
-    function removeTaskFromAllProjects(taskId) {
+    function removeTaskFromAllProjects(task) {
         for (const projectName in projects) {
-            projects[projectName].removeTask(taskId);
+            projects[projectName].removeTask(task);
         }
     }
 
@@ -109,7 +112,7 @@ const Project = (function() {
         }
     }
 
-    return { addNewProject, getProject, getAllProjects, getAllProjectNames, getProjectTasks, addTaskToProject, 
+    return { addNewProject, getProjectByName, getAllProjects, getAllProjectNames, getProjectTaskIds, 
             removeTaskFromAllProjects, wipeMemory }
 
 })()

@@ -9,7 +9,7 @@ const Task = (function() {
     loadTasks();
     
     // Task object factory function
-    function createTask(id, description, importance, dueDate, projects, notes, completed) {
+    function createTask(id, description, importance, dueDate, notes, completed) {
 
         function isEditableTaskProperty(property) {
             return property === "description"
@@ -23,7 +23,6 @@ const Task = (function() {
                     description, 
                     importance, 
                     dueDate, 
-                    projects, 
                     notes, 
                     completed, 
                     toggleComplete: function() {
@@ -51,24 +50,13 @@ const Task = (function() {
                         
                     },
                     delete: function() {
-                        deleteTask(this.id);
+                        // Delete from from any projects
+                        Project.removeTaskFromAllProjects(this);
+                        // Delete from tasks object
+                        delete tasks[this.id];
+                        // Delete from local storage
+                        localStorage.removeItem(this.id);
                     },
-                    addProject: function(projectName) {
-                        if (!this.projects.includes(projectName)) {
-                            this.projects.push(projectName);
-                            saveTaskToLocalStorage(this);
-                        }
-                    },
-                    removeProject: function(projectName) {
-                        if (this.projects.includes(projectName)) {
-                            const index = this.projects.indexOf(projectName);
-                            this.projects.splice(index, 1);
-                            saveTaskToLocalStorage(this);
-                        }
-                    },
-                    getProjects: function() {
-                        return this.projects;
-                    }
                 };
     }
 
@@ -101,22 +89,6 @@ const Task = (function() {
                         result = false;
                     }
                     break;
-                case "projects":
-                    if (data[key].constructor !== Array) {
-                        console.log('Error: projects must be an array!');
-                        result = false;
-                    }
-                    if (data[key].constructor === Array && data[key].length !== 0) {
-                        // Projects is a non-empty array. Check that it contains strings.
-                        for (let i = 0; i < data[key].length; i++) {
-                            if (typeof(data[key][i]) !== "string") {
-                                console.log("Error: non-string found in projects array!")
-                                result = false;
-                                break;
-                            }
-                        }
-                    }
-                    break;
                 case "notes":
                     if (typeof(data[key]) !== "string") {
                         console.log("Error: notes must be a string!");
@@ -138,19 +110,19 @@ const Task = (function() {
     }
 
 
-    function isTaskDataValid(description, importance, dueDate, projects, notes, completed) {
-        const data = { description, importance, dueDate, projects, notes, completed }; // build object
+    function isTaskDataValid(description, importance, dueDate, notes, completed) {
+        const data = { description, importance, dueDate, notes, completed }; // build object
         return isTaskDataObjectValid(data);
     }
 
     // Public task adding function
-    function addNewTask(description, importance, dueDate, projects, notes, completed) {
-        if (!isTaskDataValid(description, importance, dueDate, projects, notes, completed)) {
+    function addNewTask(description, importance, dueDate, notes, completed) {
+        if (!isTaskDataValid(description, importance, dueDate, notes, completed)) {
             console.log('Task not created due to invalid task data!');
             return;
         }
         const id = getNextId();
-        const task = createTask(id, description, importance, dueDate, projects, notes, completed);
+        const task = createTask(id, description, importance, dueDate, notes, completed);
         tasks[task.id] = task;
         saveTaskToLocalStorage(task);
         saveCurrentId();
@@ -162,20 +134,15 @@ const Task = (function() {
         localStorage.setItem(task.id, JSON.stringify(task));
     }
 
-    // Public function to delete task using task ID
-    function deleteTask(id) {
-        // Delete from from any projects
-        Project.removeTaskFromAllProjects(id);
-        // Delete from tasks object
-        delete tasks[id];
-        // Delete from local storage
-        localStorage.removeItem(id);
-    }
+    // // Public function to delete task using task ID
+    // function deleteTask(id) {
+        
+    // }
 
 
     // Task rehydration function (adds methods back to task objects loaded from local storage)
     function rehydrateTask(taskData) {
-        return createTask( taskData.id, taskData.description, taskData.importance, taskData.dueDate, taskData.projects, taskData.notes, taskData.completed);
+        return createTask( taskData.id, taskData.description, taskData.importance, taskData.dueDate, taskData.notes, taskData.completed);
     }
 
 
@@ -211,17 +178,8 @@ const Task = (function() {
         return Object.keys(tasks).length;
     }
 
-    // Function to add a project to a task
-    function addProjectToTask(id, projectName) {
-        if (tasks[id].projects.includes(projectName)) {
-            console.log("Project already added to this task!")
-        } else {
-            tasks[id].projects += projectName;
-        }
-    }
-
     // Function to return array of all tasks
-    function getTaskObjects() {
+    function getAllTasks() {
         return Object.values(tasks);
     }
 
@@ -239,13 +197,13 @@ const Task = (function() {
 
     // Returns tasks due today
     function getTodaysTasks() {
-        const tasksArray = getTaskObjects();
+        const tasksArray = getAllTasks();
         return tasksArray.filter(task => isToday(task.dueDate))
     }
 
     // Returns tasks due from today to the end of the week
     function getWeeksTasks() {
-        const tasksArray = getTaskObjects();
+        const tasksArray = getAllTasks();
         const weeksTasks = tasksArray.filter(task => isThisWeek(task.dueDate) && (isToday(task.dueDate) || isFuture(task.dueDate)));
         return sortByDueDate(weeksTasks);
     }
@@ -257,19 +215,11 @@ const Task = (function() {
     function sortByImportance(tasks) {
         return tasks.sort((a, b) => b.importance - a.importance);
     }
-
-    function removeProjectFromAllTasks(projectName) {
-        for (const task in Object.values(tasks)) {
-            task.removeProject(projectName);
-        }
-    }
     
 
     function wipeMemory() {
         // Clear from projects
-        for (const taskId in tasks) {
-            Project.removeTaskFromAllProjects(taskId);
-        }
+        getAllTasks().forEach(task => Project.removeTaskFromAllProjects(task));
         // Clear module memory
         tasks = {};
         currentId = 0;
@@ -282,6 +232,6 @@ const Task = (function() {
         }
     }
 
-    return { getTaskObjects, getTaskIds, getTaskById, getNumTasks, getTodaysTasks, getWeeksTasks, addNewTask, 
-            deleteTask, addProjectToTask, sortByDueDate, sortByImportance, removeProjectFromAllTasks, wipeMemory }
+    return { getAllTasks, getTaskIds, getTaskById, getNumTasks, getTodaysTasks, getWeeksTasks, addNewTask, 
+                sortByDueDate, sortByImportance, wipeMemory }
 })();
