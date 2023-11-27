@@ -161,7 +161,6 @@ const Forms = (function() {
 
     // Event listener for when the form is successfully submitted
     function formSubmitted(event) {
-        console.log('SUBMITTED');
         const form = event.target;
         // Get task and project info
         const description = form.querySelector('#description').value;
