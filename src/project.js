@@ -12,7 +12,7 @@ const Project = (function() {
                     description,
                     tasks,
                     getTasks: function() {
-                        return Object.values(this.tasks);
+                        return Object.values(this.tasks) || [];
                     },
                     hasTask: function(task) {
                         return task.id in this.tasks;
