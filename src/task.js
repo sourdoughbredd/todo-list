@@ -1,4 +1,4 @@
-import { isDate, isToday, isThisWeek, isFuture } from 'date-fns';
+import { isDate, isToday, isThisWeek, isFuture, parseJSON } from 'date-fns';
 import { Project } from './project';
 export { Task };
 
@@ -142,6 +142,8 @@ const Task = (function() {
 
     // Task rehydration function (adds methods back to task objects loaded from local storage)
     function rehydrateTask(taskData) {
+        // Due date comes back as string, convert back to date object
+        taskData.dueDate = parseJSON(taskData.dueDate);
         return createTask( taskData.id, taskData.description, taskData.importance, taskData.dueDate, taskData.notes, taskData.completed);
     }
 
