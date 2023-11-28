@@ -235,5 +235,5 @@ const Task = (function() {
     }
 
     return { getAllTasks, getTaskIds, getTaskById, getNumTasks, getTodaysTasks, getWeeksTasks, addNewTask, 
-                sortByDueDate, sortByImportance, wipeMemory }
+            sortByDueDate, sortByImportance, wipeMemory }
 })();
