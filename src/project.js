@@ -1,3 +1,4 @@
+import parseJSON from "date-fns/parseJSON";
 export { Project };
 
 const Project = (function() {
@@ -45,6 +46,11 @@ const Project = (function() {
 
     // Function to add methods back to projects loaded from local storage
     function rehydrateProject(projectData) {
+        // Convert task due dates back to Date objects
+        for (let key in projectData.tasks) {
+            projectData.tasks[key].dueDate = parseJSON(projectData.tasks[key].dueDate);
+        }
+        //
         return createProject(projectData.name, projectData.description, projectData.tasks);
     }
 
