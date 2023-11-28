@@ -1,4 +1,5 @@
 // Creates form DOM elements for the page
+import { Header } from "./header";
 import { Project } from "./project";
 import { Task } from "./task";
 
@@ -181,6 +182,9 @@ const Forms = (function() {
         form.reset();
         form.classList.add("hidden");
         document.querySelectorAll('*').forEach(el => el.classList.remove('disabled'));
+
+        // Refresh header nex ttask due
+        Header.updateNextDue()
     }
 
     // Close the form (reset and hide)
