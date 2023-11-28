@@ -95,10 +95,6 @@ const Project = (function() {
         return Object.keys(projects);
     }
 
-    // function addTaskToProject(task, project) {
-    //     project.addTask(task.id);
-    // }
-
     function removeTaskFromAllProjects(task) {
         for (const projectName in projects) {
             projects[projectName].removeTask(task);
