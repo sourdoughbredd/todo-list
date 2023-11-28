@@ -1,6 +1,7 @@
 import { Task } from "./task";
 import { Project } from "./project";
-import { format, isFuture, isBefore, startOfToday, isToday, isTomorrow, isThisWeek, isThisMonth } from "date-fns";
+import { format, isFuture, isBefore, startOfToday, isToday, isTomorrow, isThisWeek, isThisMonth, isAfter, startOfWeek,
+    endOfWeek, startOfMonth, endOfMonth, addWeeks, addMonths } from "date-fns";
 import deleteIcon from './assets/delete-icon.svg';
 import editIcon from './assets/edit-icon.svg';
 import notesIcon from './assets/notes-icon.svg';
@@ -325,11 +326,29 @@ const UiControl = (function() {
             return 'Tomorrow';
         } else if (isThisWeek(date)) {
             return 'This Week';
+        } else if (isNextWeek(date)) {
+            return 'Next Week';    
         } else if (isThisMonth(date)) {
             return 'This Month';
+        } else if (isNextMonth(date)) {
+            return 'Next Month';
         } else {
-            return 'After This Month'
+            return 'After Next Month'
         }
+    }
+
+    function isNextWeek(date) {
+        const today = startOfToday();
+        const endOfThisWeek = endOfWeek(today)
+        const endOfNextWeek = startOfWeek(addWeeks(endOfThisWeek, 2));
+        return isAfter(date, endOfThisWeek) && isBefore(date, endOfNextWeek);
+    }
+
+    function isNextMonth(date) {
+        const today = startOfToday();
+        const endOfThisMonth = endOfMonth(today);
+        const endOfNextMonth = startOfMonth(addMonths(today, 2));
+        return isAfter(date, endOfThisMonth) && isBefore(date, endOfNextMonth);
     }
     
     function getRadioButton() {
