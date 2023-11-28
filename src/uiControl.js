@@ -312,10 +312,7 @@ const UiControl = (function() {
 
     // Returns date string formatted as, for example, Mon Nov 20
     function getFormattedDate(date) {
-        const weekday = format(date, "ccc");
-        const month = format(date, "MMM");
-        const day = format(date, "dd")
-        return weekday + " " + month + " " + day; 
+        return format(date, "ccc MMM dd");
     }
 
     function getTimeFrameStrLong(date) {
