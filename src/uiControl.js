@@ -1,5 +1,6 @@
 import { Task } from "./task";
 import { Project } from "./project";
+import { Forms } from "./forms";
 import { format, isFuture, isBefore, startOfToday, isToday, isTomorrow, isThisWeek, isThisMonth, isAfter, startOfWeek,
     endOfWeek, startOfMonth, endOfMonth, addWeeks, addMonths } from "date-fns";
 import deleteIcon from './assets/delete-icon.svg';
@@ -381,7 +382,13 @@ const UiControl = (function() {
     }
 
     function editTaskBtnClicked(event) {
-
+        // Get task info
+        const taskEl = getClosestTaskAncestor(event.target);
+        const taskId = taskEl.dataset.taskId;
+        const task = Task.getTaskById(taskId);
+        // Show task edit form
+        const projects = Project.getProjectNamesForTask(task);
+        Forms.showEditTaskForm(taskId, task.description, projects, task.dueDate, task.importance, task.notes);
     }
 
     function viewNotesTaskBtnClicked(event) {
