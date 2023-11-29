@@ -2,28 +2,43 @@
 import { Header } from "./header";
 import { Project } from "./project";
 import { Task } from "./task";
+import { format } from "date-fns";
 
 export { Forms };
 
 const Forms = (function() {
 
-    // Create the form
+    // Create the forms
     const body = document.querySelector('body');
-    const form = getAddTaskForm();
+    const addForm = createAddTaskForm();
+    const editForm = createEditTaskForm();
 
-    // Function to add hidden form to the DOM
-    function addHiddenForm() {
-        form.classList.add('hidden');
-        body.appendChild(form);
+    // Add event listener to form submission
+    addForm.addEventListener('submit', function(event) { 
+        event.preventDefault()
+        if (this.checkValidity()) { addTaskFormSubmitted(event) };
+    });
+
+    editForm.addEventListener('submit', function(event) { 
+        event.preventDefault()
+        if (this.checkValidity()) { editTaskFormSubmitted(event) };
+    });
+
+    // Function to add hidden forms to the DOM
+    function addHiddenForms() {
+        addForm.classList.add('hidden');
+        editForm.classList.add('hidden');
+        body.appendChild(addForm);
+        body.appendChild(editForm);
     }
 
-    // Function to show the form
+    // Function to show the add task form
     function showAddTaskForm() {
         // Disable interaction with rest of DOM
         const otherBodyElements = document.querySelectorAll('body > :not(.add-task-form)');
         otherBodyElements.forEach(el => el.classList.add('disabled'));
         // Show the form
-        form.classList.remove('hidden');
+        addForm.classList.remove('hidden');
     }
 
     //Function to refresh the project list on the form
@@ -36,14 +51,27 @@ const Forms = (function() {
         })
     }
 
+    // Function show edit task form
+    function showEditTaskForm(taskId, description, projects, dueDate, importance, notes) {
+        // Disable interaction with rest of DOM
+        const otherBodyElements = document.querySelectorAll('body > :not(.edit-task-form)');
+        otherBodyElements.forEach(el => el.classList.add('disabled'));
+        // Attach the task ID to the form for reference during submission
+        editForm.dataset.taskId = taskId;
+        // Fill with task info
+        fillWithTaskInfo(editForm, description, projects, dueDate, importance, notes);
+        // Show the form
+        editForm.classList.remove('hidden');
+    }
+
 
     // HELPERS
 
-    function getAddTaskForm() {
+    function createAddTaskForm() {
         const formContainer = document.createElement("div");
         formContainer.classList.add("add-task-form-container");
         formContainer.innerHTML = `
-            <form action="" class="add-task-form">
+            <form action="" class="task-form add-task-form">
                 <h3>Add Task</h3>
                 <span class="close-btn">×</span>
                 <div class="task-container">
@@ -72,8 +100,8 @@ const Forms = (function() {
 
         // Add project selector
         const addToProjectBtn = form.querySelector(".add-to-project-btn");
-        addToProjectBtn.appendChild(getProjectDropdown());
         addToProjectBtn.addEventListener('click', event => addToProjectBtnClicked(event));
+        addToProjectBtn.appendChild(getProjectDropdown());
         
         // Add event listener on entire document that will hide the dropdown if clicked anywhere else
         document.addEventListener('click', event => documentClicked(event));
@@ -91,14 +119,44 @@ const Forms = (function() {
         // Add event listener to close button
         form.querySelector('.close-btn').addEventListener('click', (event) => closeForm(event));
 
-        // Add event listener to form submission
-        form.addEventListener('submit', function(event) { 
-            event.preventDefault()
-            if (this.checkValidity()) { formSubmitted(event) };
-        });
+        return form;
+    }
+
+    function createEditTaskForm() {
+        // Get the usual add task form
+        const form = createAddTaskForm();
+
+        // Give it a different class name
+        form.classList.remove('add-task-form');
+        form.classList.add('edit-task-form');
+
+        // Change the button label from "Add" to "Submit"
+        form.querySelector('button[type="submit"]').innerText = "Submit";
 
         return form;
     }
+
+    function fillWithTaskInfo(form, description, projects, dueDate, importance, notes) {
+        // Description
+        form.querySelector('.task-container #description').value = description;
+        // Projects
+        const projectCheckboxes = form.querySelectorAll('.project-select-dropdown input');
+        Array.from(projectCheckboxes).forEach(projectCheckbox => {
+            if (projects.includes(projectCheckbox.value)) {
+                projectCheckbox.checked = true;
+            }
+        });
+        // Due Date
+        const dueDateStr = format(dueDate, "yyyy-MM-dd");
+        form.querySelector('#due-date').value = dueDateStr;
+        // Importance
+        const radios = form.querySelectorAll('.importance-container .radio');
+        Array.from(radios).forEach(radio => radio.classList.remove("checked"));
+        const radioToCheck = Array.from(radios).filter(radio => radio.dataset.importance == importance);
+        radioToCheck[0].classList.add("checked");
+        // Notes
+        form.querySelector('.notes-container textarea').value = notes;
+    }   
 
     function getRadioButton(importance) {
         const radioBtn = document.createElement("div");
@@ -150,7 +208,8 @@ const Forms = (function() {
             return;
         }
         // Get the dropdown element
-        const dropdown = document.querySelector(".add-task-form .project-select-dropdown")
+        const btn = event.target.closest('.add-to-project-btn');
+        const dropdown = btn.querySelector('.project-select-dropdown');
         // Toggle it's hidden class
         dropdown.classList.toggle("hidden");
     }
@@ -161,7 +220,7 @@ const Forms = (function() {
     }
 
     // Event listener for when the form is successfully submitted
-    function formSubmitted(event) {
+    function addTaskFormSubmitted(event) {
         const form = event.target;
         // Get task and project info
         const description = form.querySelector('#description').value;
@@ -172,7 +231,7 @@ const Forms = (function() {
         // Make due by 11:59:59 that day
         const dueDateLocal = new Date(dueDateUTC.getUTCFullYear(), dueDateUTC.getUTCMonth(), dueDateUTC.getUTCDate(), 11, 59, 59);
         const importance = parseInt(form.querySelector(".radio.checked").dataset.importance);
-        const notes = form.querySelector('input[name="notes"]') || "";
+        const notes = form.querySelector('textarea[name="notes"]').value;
         
         // Create the task and assign to projects
         const task = Task.addNewTask(description, importance, dueDateLocal, notes, false);
@@ -187,9 +246,44 @@ const Forms = (function() {
         Header.updateNextDue()
     }
 
+    // Event listener for when the form is successfully submitted
+    function editTaskFormSubmitted(event) {
+        const form = event.target;
+        // Get task and project info
+        const taskId = form.dataset.taskId;
+        let taskData = {};
+        taskData.description = form.querySelector('#description').value;
+        const dueDateUTC = form.querySelector("#due-date").valueAsDate;
+        // Date input creates a UTC time, but user was specifying local time. Correct this.
+        // Make due by 11:59:59 that day
+        taskData.dueDate = new Date(dueDateUTC.getUTCFullYear(), dueDateUTC.getUTCMonth(), dueDateUTC.getUTCDate(), 11, 59, 59);
+        taskData.importance = parseInt(form.querySelector(".radio.checked").dataset.importance);
+        taskData.notes = form.querySelector('textarea[name="notes"]').value;
+        
+        // Update the task
+        const task = Task.getTaskById(taskId);
+        task.update(taskData);
+
+        // Update the projects
+        const dropdownSelections = form.querySelectorAll('input[name="project-selection"]:checked');
+        const projectNames = Array.from(dropdownSelections).map(node => node.value);
+        Project.removeTaskFromAllProjects(task);
+        projectNames.forEach(projectName => {
+            Project.getProjectByName(projectName).addTask(task);
+        })
+
+        // Clear the form, hide, and re-enable rest of DOM
+        form.reset();
+        form.classList.add("hidden");
+        document.querySelectorAll('*').forEach(el => el.classList.remove('disabled'));
+
+        // Refresh header next task due
+        Header.updateNextDue()
+    }
+
     // Close the form (reset and hide)
     function closeForm(event) {
-        const form = event.target.closest('.add-task-form');
+        const form = event.target.closest('.add-task-form') || event.target.closest('.edit-task-form');
         form.reset();
         form.classList.add("hidden");
         document.querySelectorAll('*').forEach(el => el.classList.remove('disabled'));
@@ -199,13 +293,13 @@ const Forms = (function() {
     function documentClicked(event) {
         // If we clicked outside of the dropdown menu, hide it. Make sure to ignore clicks on the add
         // to project button since we handle that with it's own event listener
-        const form = document.querySelector('.add-task-form');
-        if (form && !isElementInDropdown(event.target) && !event.target.closest('.add-to-project-btn')) {
-            const dropdown = form.querySelector(".project-select-dropdown");
+        const activeForm = document.querySelector('.task-form:not(.hidden)')
+        if (activeForm && !isElementInDropdown(event.target) && !event.target.closest('.add-to-project-btn')) {
+            const dropdown = activeForm.querySelector(".project-select-dropdown");
             dropdown.classList.add("hidden");
         }
     }
 
-    return { addHiddenForm, showAddTaskForm, refreshProjectList };
+    return { addHiddenForms, showAddTaskForm, showEditTaskForm, refreshProjectList };
 
 })();
