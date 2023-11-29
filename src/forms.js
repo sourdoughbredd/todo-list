@@ -13,7 +13,7 @@ const Forms = (function() {
     const addForm = createAddTaskForm();
     const editForm = createEditTaskForm();
 
-    // Add event listener to form submission
+    // Add event listener to form submissions
     addForm.addEventListener('submit', function(event) { 
         event.preventDefault()
         if (this.checkValidity()) { addTaskFormSubmitted(event) };
@@ -41,13 +41,16 @@ const Forms = (function() {
         addForm.classList.remove('hidden');
     }
 
-    //Function to refresh the project list on the form
+    // Function to refresh the project list on the forms
     function refreshProjectList() {
-        const dropdownUl = document.querySelector('.project-select-dropdown > ul')
-        const projectNames = Project.getAllProjectNames();
-        dropdownUl.innerHTML = '';
-        projectNames.forEach(projectName => {
-            dropdownUl.innerHTML += `<li><input type="checkbox" name="project-selection" value="${projectName}">${projectName}</li>`;
+        const forms = [addForm, editForm];
+        forms.forEach(form => {
+            const dropdownUl = form.querySelector('.project-select-dropdown > ul')
+            const projectNames = Project.getAllProjectNames();
+            dropdownUl.innerHTML = '';
+            projectNames.forEach(projectName => {
+                dropdownUl.innerHTML += `<li><input type="checkbox" name="project-selection" value="${projectName}">${projectName}</li>`;
+        })
         })
     }
 
@@ -129,6 +132,9 @@ const Forms = (function() {
         // Give it a different class name
         form.classList.remove('add-task-form');
         form.classList.add('edit-task-form');
+
+        // Change title
+        form.querySelector('h3').innerText = 'Edit Task'
 
         // Change the button label from "Add" to "Submit"
         form.querySelector('button[type="submit"]').innerText = "Submit";
