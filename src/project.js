@@ -101,6 +101,12 @@ const Project = (function() {
         }
     }
 
+    function getProjectNamesForTask(task) {
+        const projects = getAllProjects();
+        const taskProjects = projects.filter(project => project.hasTask(task));
+        return taskProjects.map(project => project.name)
+    }
+
     function wipeMemory() {
         // Clear module memory
         projects = {};
@@ -113,7 +119,7 @@ const Project = (function() {
         }
     }
 
-    return { addNewProject, getProjectByName, getAllProjects, getAllProjectNames, getProjectTaskIds, 
-            removeTaskFromAllProjects, wipeMemory }
+    return { addNewProject, getProjectByName, getAllProjects, getAllProjectNames, getProjectTaskIds,
+            getProjectNamesForTask, removeTaskFromAllProjects, wipeMemory }
 
 })()
