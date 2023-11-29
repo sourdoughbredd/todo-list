@@ -184,7 +184,7 @@ header #profile {
 }
 
 .main .task .radio,
-.add-task-form .radio {
+.task-form .radio {
   width: 20px;
   height: 20px;
   border: 2px solid black;
@@ -196,37 +196,37 @@ header #profile {
 }
 
 .main .task[data-importance="0"] .radio,
-.add-task-form .radio[data-importance="0"] {
+.task-form .radio[data-importance="0"] {
   border-color: green;
 }
 
 .main .task[data-importance="1"] .radio,
-.add-task-form .radio[data-importance="1"] {
+.task-form .radio[data-importance="1"] {
   border-color: orange;
 }
 
 .main .task[data-importance="2"] .radio,
-.add-task-form .radio[data-importance="2"] {
+.task-form .radio[data-importance="2"] {
   border-color: red;
 }
 
 .main .task[data-completed="false"] .radio:hover,
-.add-task-form .radio:not(:checked):hover {
+.task-form .radio:not(:checked):hover {
   background-color: rgb(182, 182, 182);
 }
 
 .main .task[data-completed="true"][data-importance="0"] .radio,
-.add-task-form .radio[data-importance="0"].checked {
+.task-form .radio[data-importance="0"].checked {
   background-color: green;
 }
 
 .main .task[data-completed="true"][data-importance="1"] .radio,
-.add-task-form .radio[data-importance="1"].checked  {
+.task-form .radio[data-importance="1"].checked  {
   background-color: orange;
 }
 
 .main .task[data-completed="true"][data-importance="2"] .radio,
-.add-task-form .radio[data-importance="2"].checked  {
+.task-form .radio[data-importance="2"].checked  {
   background-color: red;
 }
 
@@ -247,7 +247,7 @@ header #profile {
 
 /* Forms */
 
-.add-task-form {
+.task-form {
   position: absolute;
   left: 50%;
   top: 50%;
@@ -259,36 +259,36 @@ header #profile {
   padding: 36px;
 }
 
-.add-task-form .close-btn {
+.task-form .close-btn {
   position: absolute;
   right: 24px;
   top: 24px;
   cursor: pointer;
 }
 
-.add-task-form .task-container {
+.task-form .task-container {
   display: flex;
 }
 
-.add-task-form .importance-container {
+.task-form .importance-container {
   display: flex;
 }
 
-.add-task-form .radio-group {
+.task-form .radio-group {
   display: flex;
 }
 
-.add-task-form .add-to-project-btn {
+.task-form .add-to-project-btn {
   position: relative;
   border: 1px solid black;
   cursor: pointer;
 }
 
-.add-task-form .add-to-project-btn .dropdown-arrow {
+.task-form .add-to-project-btn .dropdown-arrow {
   font-size: 0.8rem;
 }
 
-.add-task-form .project-select-dropdown {
+.task-form .project-select-dropdown {
   position: absolute;
   width: inherit;
   border: 1px solid black;
