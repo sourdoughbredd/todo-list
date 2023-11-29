@@ -8,5 +8,5 @@ import { loadSidebar } from './sidebar';
 Header.loadHeader();
 loadFooter();
 loadSidebar();
-Forms.addHiddenForm();
+Forms.addHiddenForms();
 UiControl.displayAllTasks();
