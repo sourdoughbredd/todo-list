@@ -296,7 +296,7 @@ const UiControl = (function() {
         notesBtn.classList.add('task-notes-btn');
         notesBtn.setAttribute("src", notesIcon);
         notesBtn.setAttribute("title", "View notes")
-        notesBtn.addEventListener("click", (event) => viewNotesTaskBtnClicked(event));
+        notesBtn.addEventListener("click", (event) => viewNotesBtnClicked(event));
         taskBtns.appendChild(notesBtn);
         taskEl.appendChild(taskBtns);
 
@@ -391,8 +391,32 @@ const UiControl = (function() {
         Forms.showEditTaskForm(taskId, task.description, projects, task.dueDate, task.importance, task.notes);
     }
 
-    function viewNotesTaskBtnClicked(event) {
+    function viewNotesBtnClicked(event) {
+        const viewNotesBtn = event.target;
+        // Check if popup is already open
+        if (viewNotesBtn.closest('.task-btns').querySelector('.notes-popup')) {
+            return;
+        }
+        // Close any other popups on the page
+        if (document.querySelector('.notes-popup')) {
+            document.querySelector('.notes-popup').remove();
+        }
 
+        // Get the task notes
+        const taskId = getClosestTaskAncestor(viewNotesBtn).dataset.taskId;
+        const notes = Task.getTaskById(taskId).notes;
+
+        // Create DOM element to display the notes
+        const notesEl = document.createElement("div");
+        notesEl.classList.add('notes-popup');
+        notesEl.innerHTML = `
+            <h3>Notes</h3>
+            <p>${notes}</p>
+        `;
+
+        // Append it to the buttons
+        const taskBtns = viewNotesBtn.closest('.task-btns');
+        taskBtns.appendChild(notesEl);
     }
 
     // Gets the closest ancestor of element that is a task element
@@ -411,6 +435,18 @@ const UiControl = (function() {
             taskEl.dataset.taskId = task.id;
         });
     }
+
+    // If page is clicked anywhere but the the show notes button, close the current popup
+    document.addEventListener('click', event => {
+        // Only close popups if click is outside not a popup or view notes btn
+        const activePopup = document.querySelector('.notes-popup');
+        if (activePopup) {
+            const activeViewNotesBtn = activePopup.closest('.task-btns').querySelector('.task-notes-btn');
+            if (event.target.closest('.notes-popup') !== activePopup && event.target !== activeViewNotesBtn) {
+                activePopup.remove();
+            }
+        }
+    })
 
     return { displayAllTasks, displayTodaysTasks, displayWeeksTasks, displayImportantTasks, displayCompletedTasks,
         displayProject };
