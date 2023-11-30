@@ -1,6 +1,7 @@
 import { Task } from "./task";
 import { Project } from "./project";
 import { Forms } from "./forms";
+import { Sidebar } from "./sidebar";
 import { format, isFuture, isBefore, startOfToday, isToday, isTomorrow, isThisWeek, isThisMonth, isAfter, startOfWeek,
     endOfWeek, startOfMonth, endOfMonth, addWeeks, addMonths } from "date-fns";
 import deleteIcon from './assets/delete-icon.svg';
@@ -206,7 +207,14 @@ const UiControl = (function() {
         // Initialize main
         clearMain();
         const main = document.querySelector(".main");
-        main.innerHTML = `<h2>${projectName}</h2>`;
+        main.innerHTML = `
+        <div class="project-title" data-project-name="${projectName}">
+            <h2>${projectName}</h2>
+            <img src=${deleteIcon}  title="Delete Project" data-project-name="${projectName}">
+        </div>
+        `;
+        const deleteProjectBtn = main.querySelector('.project-title img');
+        deleteProjectBtn.addEventListener('click', event => deleteProjectBtnClicked(event));
 
         // Get tasks for this project
         const tasks = project.getTasks();
@@ -367,6 +375,14 @@ const UiControl = (function() {
         task.toggleComplete();
         // Update the DOM elements
         refreshTaskDataset(task);
+    }
+
+    function deleteProjectBtnClicked(event) {
+        const projectName = event.target.dataset.projectName;
+        const project = Project.getProjectByName(projectName);
+        project.delete();
+        Sidebar.loadSidebar();  // reload sidebar to update project list
+        displayAllTasks();
     }
 
     function deleteTaskBtnClicked(event) {
