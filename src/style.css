@@ -90,6 +90,10 @@ header .add-task-btn {
   cursor: pointer;
 }
 
+header .add-task-btn:hover {
+  transform: scale(1.1);
+}
+
 header #profile {
   width: 60px;
   height: 60px;
@@ -170,17 +174,70 @@ header #profile {
   padding: 2px 2px;
 }
 
+.sidebar .add-project-btn {
+  color: rgb(147, 147, 147);
+}
+
 /* Main */
+
+.main {
+  padding: 50px 60px;
+}
+
+.main h2 {
+  margin: 0;
+  font-size: 3rem;
+  margin-bottom: 36px;
+}
+
+.main .project-title {
+  display: flex;
+  gap: 18px;
+  align-items: end;
+}
+
+.main .project-title img {
+  margin-bottom: 44px;
+  cursor: pointer;
+}
+
+.main .project-title img:hover {
+  transform: scale(1.2);
+}
+
+.main .time-frame {
+  margin-bottom: 20px;
+}
+
+.main .time-frame > span,
+.main .project-container > span {
+  display: block;
+  width: 100%;
+  font-size: 1.6rem;
+  border-bottom: 2px solid rgb(205, 205, 205);
+  padding-bottom: 8px;
+}
+
 .main .task-list {
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
+  margin-top : 20px;
+  margin-bottom: 40px;
 }
 
 .main .task {
-  display: flex;
-  gap: 20px;
+  font-size: 1.2rem;
+  display: grid;
+  grid-template-columns: 12px minmax(200px, 4fr) 1fr 1fr;
   align-items: center;
+  gap: 24px;
+}
+
+.main .task .task-due-date {
+  flex-grow: 1;
+  text-align: right;
+  text-wrap: nowrap;
 }
 
 .main .task .radio,
@@ -231,6 +288,7 @@ header #profile {
 }
 
 .main .task .task-btns {
+  position: relative;
   display: flex;
   gap: 10px;
 }
@@ -244,6 +302,14 @@ header #profile {
   transform: scale(1.2);
 }
 
+.main .task-btns .notes-popup {
+  position: absolute;
+  left: 100%;
+  bottom: 100%;
+  border: 2px solid black;
+  width: 400px;
+  background-color: white;
+}
 
 /* Forms */
 
