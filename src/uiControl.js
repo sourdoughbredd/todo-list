@@ -91,7 +91,7 @@ const UiControl = (function() {
             const projectContainer = document.createElement("div");
             projectContainer.classList.add('project-container');
             projectContainer.innerHTML = `
-                <h3>${projectName}</h3>
+                <span>${projectName}</span>
             `;
 
             // Add task elements to the project task list
@@ -138,8 +138,7 @@ const UiControl = (function() {
             const currDayTasks = Task.sortByImportance(daysOfWeekMap[dayStr]);
             const formattedDate = getFormattedDate(currDayTasks[0].dueDate);
             currDayContainer.innerHTML = `
-                <span>${dayStr}</span>
-                <span>${formattedDate}</span>
+                <span>${dayStr}, ${formattedDate}</span>
             `;
             currDayContainer.appendChild(getTaskListDomElement(currDayTasks, false))
             daysContainer.appendChild(currDayContainer);
