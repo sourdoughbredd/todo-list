@@ -1,45 +1,51 @@
 import { UiControl } from "./uiControl";
 import { Project } from "./project";
 import { Forms } from "./forms";
-export { loadSidebar }
+export { Sidebar }
 
+const Sidebar = (function() {
 
-function loadSidebar() {
-    const sidebar = document.querySelector(".sidebar");
-    sidebar.innerHTML = `
-        <ul class="task-explorer">
-            <li class="filter all" tabindex="0">All</li>
-            <li class="filter today" tabindex="0">Today</li>
-            <li class="filter week" tabindex="0">This Week</li>
-            <li class="filter important" tabindex="0">Important</li>
-            <li class="filter done" tabindex="0">Done</li>
-        </ul>
-        <div class="project-explorer">
-            <h3 class="title">Projects</h3>
-            <ul class="projects"></ul>
-        </div>
-    `;
+    function loadSidebar() {
+        const sidebar = document.querySelector(".sidebar");
+        sidebar.innerHTML = `
+            <ul class="task-explorer">
+                <li class="filter all" tabindex="0">All</li>
+                <li class="filter today" tabindex="0">Today</li>
+                <li class="filter week" tabindex="0">This Week</li>
+                <li class="filter important" tabindex="0">Important</li>
+                <li class="filter done" tabindex="0">Done</li>
+            </ul>
+            <div class="project-explorer">
+                <h3 class="title">Projects</h3>
+                <ul class="projects"></ul>
+            </div>
+        `;
+    
+        // Add projects
+        addProjectList();
+    
+        // Add event listeners for nav buttons
+        const allBtn = sidebar.querySelector(".filter.all");
+        allBtn.addEventListener('click', UiControl.displayAllTasks);
+    
+        const todayBtn = sidebar.querySelector(".filter.today");
+        todayBtn.addEventListener("click", UiControl.displayTodaysTasks)
+    
+        const weekBtn = sidebar.querySelector(".filter.week");
+        weekBtn.addEventListener("click", UiControl.displayWeeksTasks)
+    
+        const importantBtn = sidebar.querySelector(".filter.important");
+        importantBtn.addEventListener("click", UiControl.displayImportantTasks);
+    
+        const doneBtn = sidebar.querySelector(".filter.done");
+        doneBtn.addEventListener("click", UiControl.displayCompletedTasks)
+    
+    }
 
-    // Add projects
-    addProjectList();
+    return { loadSidebar };
 
-    // Add event listeners for nav buttons
-    const allBtn = sidebar.querySelector(".filter.all");
-    allBtn.addEventListener('click', UiControl.displayAllTasks);
+})();
 
-    const todayBtn = sidebar.querySelector(".filter.today");
-    todayBtn.addEventListener("click", UiControl.displayTodaysTasks)
-
-    const weekBtn = sidebar.querySelector(".filter.week");
-    weekBtn.addEventListener("click", UiControl.displayWeeksTasks)
-
-    const importantBtn = sidebar.querySelector(".filter.important");
-    importantBtn.addEventListener("click", UiControl.displayImportantTasks);
-
-    const doneBtn = sidebar.querySelector(".filter.done");
-    doneBtn.addEventListener("click", UiControl.displayCompletedTasks)
-
-}
 
 // Function to add all saved projects ot the project list
 function addProjectList() {
