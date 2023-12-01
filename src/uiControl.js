@@ -186,7 +186,7 @@ const UiControl = (function() {
         // Initialize main
         clearMain();
         const main = document.querySelector(".main");
-        main.innerHTML = '<h2>Completed</h2>';
+        main.innerHTML = '<h2>Done</h2>';
 
         // Get all completed tasks
         const tasks = Task.getAllTasks();
