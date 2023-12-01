@@ -78,9 +78,9 @@ const Forms = (function() {
                 <h3>Add Task</h3>
                 <span class="close-btn">×</span>
                 <div class="task-container">
-                    <input type="text" name="description" id="description" required>
+                    <input type="text" name="description" id="description" placeholder="Description" required>
                     <div class="add-to-project-btn">
-                        <span>Add to Project</span>
+                        <span>Projects</span>
                         <span class='dropdown-arrow'>&#x25BC</span>
                     </div> 
                 </div>
