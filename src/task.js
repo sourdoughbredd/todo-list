@@ -1,4 +1,5 @@
 import { isDate, isToday, isThisWeek, isFuture, parseJSON } from 'date-fns';
+import { Header } from './header';
 import { Project } from './project';
 export { Task };
 
@@ -28,6 +29,7 @@ const Task = (function() {
                     toggleComplete: function() {
                         this.completed = !this.completed;
                         saveTaskToLocalStorage(this);  // update local storage
+                        Header.updateNextDue();
                     }, 
                     update: function(data) {
                         // Check property names
@@ -47,7 +49,7 @@ const Task = (function() {
                             this[key] = data[key];
                         }
                         saveTaskToLocalStorage(this);
-                        
+                        Header.updateNextDue();
                     },
                     delete: function() {
                         // Delete from from any projects
@@ -56,6 +58,8 @@ const Task = (function() {
                         delete tasks[this.id];
                         // Delete from local storage
                         localStorage.removeItem(this.id);
+                        // Update header next due
+                        Header.updateNextDue();
                     },
                 };
     }
@@ -124,6 +128,7 @@ const Task = (function() {
         const id = getNextId();
         const task = createTask(id, description, importance, dueDate, notes, completed);
         tasks[task.id] = task;
+        Header.updateNextDue();
         saveTaskToLocalStorage(task);
         saveCurrentId();
         return task;
